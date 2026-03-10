@@ -1,0 +1,20 @@
+//baza u fileu dev.db
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+} 
+//klijent 
+generator client {
+  provider = "prisma-client-js"
+}
+
+//template za korisnika
+
+model User {
+  id       Int     @id @default(autoincrement()) // Id je inkrementirani broj
+  email    String  @unique                      // svaki acc drugi mail
+  password String                               // lozinka klasicni string samo
+  role     String  @default("USER")             // Role: "USER" ili "ADMIN"
+  firstName String
+  lastName String
+}
