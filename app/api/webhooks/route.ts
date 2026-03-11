@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         )
     }
 
-    const permittedEvents = ['payment_intent.succeeded'];
+    const permittedEvents = ['payment_intent.succeeded', 'checkout.session.completed'];
 
     if(permittedEvents.includes(event.type)) {
         let data
