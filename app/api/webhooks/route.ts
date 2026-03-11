@@ -19,6 +19,7 @@ export async function POST(request: Request) {
             signature,
             process.env.STRIPE_WEBHOOK_SECRET as string 
         );
+        //console.log("Stigao webhook:", event.type);
     } catch (err: any) {
         const errorMessage = err.message
 
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
             { status: 400 }
         )
     }
-
+    //sve sto zelis da mode proci odnosno sto zelis obraditi!
     const permittedEvents = ['payment_intent.succeeded', 'checkout.session.completed'];
 
     if(permittedEvents.includes(event.type)) {
