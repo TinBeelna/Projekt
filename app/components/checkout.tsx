@@ -15,6 +15,54 @@ function PaymentForm() {
   const stripe = useStripe();
   const elements = useElements();
 
+  //RECOVERY FLOW useffect fja
+  React.useEffect(() => { 
+
+    if(!stripe) return; //je li stripe sdk budan
+    const secretFromUrl = new URLSearchParams(window.location.search)
+      .get("payment_intent_client_secret"); //citaj tajni kljuc iz urla
+
+    if (!secretFromUrl) return;
+    //switch da se vidi sto se tocno dogodilo u checkoutu; 
+    stripe.retrievePaymentIntent(secretFromUrl).then(({ paymentIntent }) => {
+      switch (paymentIntent?.status) {
+        case "succeeded":
+          window.location.href = `/user/success?payment_intent=${paymentIntent.id}`; //success stranica sa uspjehom 
+          break;
+        case "processing":
+          window.location.href = `/user/success?payment_intent=${paymentIntent.id}`; //success stranica sa failom
+          break;
+        case "requires_payment_method":
+          if (paymentIntent.last_payment_error) {
+            setMessage("Payment didn't succeed during reload."); 
+          }
+          break;
+
+         case "requires_action":
+          setMessage("Ponovno pokrećem provjeru banke..."); //porukica dok se otvara
+          setIsLoading(true); //blokira se gumb paynow (otvoren proces u pozadini)
+
+          // PONOVNO OTVARANJE 3DS PROZORA
+          stripe.handleNextAction({
+          clientSecret: secretFromUrl, //otvara se prozor 3DSa prema urlu
+          }).then(({ error, paymentIntent }) => { //kada se zavrsi s prozorom
+          if (error) { //hendlanje errora
+          setMessage(error.message ?? "Autentifikacija nije uspjela.");
+          setIsLoading(false);
+           } else if (paymentIntent?.status === "succeeded") { //ako uspije ide se na success
+           // Ako uspije nakon modala, šalji na success
+            window.location.href = `/user/success?payment_intent=${paymentIntent.id}`;
+           }
+          });
+           break;
+
+        default:
+          setMessage("Nešto je pošlo po krivu.");
+          break;
+      }
+    });
+  }, [stripe]);
+
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,14 +80,15 @@ function PaymentForm() {
       },
     });
 
-    if (error.type === "card_error" || error.type === "validation_error") {
-      setMessage(error.message ?? "Dogodila se greška pri plaćanju.");
-    } else {
-      setMessage("An unexpected error occurred.");
-    }
+    if (error) { 
+      setMessage(error.message ?? "Error during payment");
+      console.log("Stripe error type:", error.type);
+      console.log("Stripe error code:", error.code);
+}
 
-    setIsLoading(false);
-  };
+
+  setIsLoading(false);
+};
 
   const paymentElementOptions: StripePaymentElementOptions = {
     layout: "accordion",

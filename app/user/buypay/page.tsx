@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CheckoutForm from "../../components/checkout";
 
 
@@ -11,9 +11,18 @@ export default function BuyPayPage() {
 const [odabraniItem, setItem] = useState<string | null>(null);
 const [clientSecret, setClientSecret] = useState<string>("");
 
+React.useEffect(() => { //ZA RECOVERY
+  const urlParams = new URLSearchParams(window.location.search);
+  const secretFromUrl = urlParams.get("payment_intent_client_secret"); //pamti url i nakon refresha
+
+  if (secretFromUrl) { //ako nema secreta korisnik je tek dosao
+    setClientSecret(secretFromUrl); //ponovno checkoutform ako je refresh!
+  }
+}, []); // "cim se stranica upali"
+
 
 const initiatePayment = async (item: string, amount: number) => {
-  setItem(item);
+  setItem(item); 
 
   // Poziv backend API-ja za kreiranje Payment Intenta
   const response = await fetch("/api/create-payment-intent", {
@@ -21,10 +30,18 @@ const initiatePayment = async (item: string, amount: number) => {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ amount: amount }), // šaljemo iznos koji želimo naplatiti
+    body: JSON.stringify({ 
+      amount: amount,
+      itemName: item,
+    }), // salje se iznos za naplatu i ime proizvoda!
   });
   const { clientSecret } = await response.json();
   setClientSecret(clientSecret);
+
+  //URL UPDATE 
+  const newUrl = `${window.location.pathname}?payment_intent_client_secret=${clientSecret}`;
+  window.history.pushState({}, '', newUrl);
+
 }
 
 
@@ -47,9 +64,9 @@ const initiatePayment = async (item: string, amount: number) => {
         >
           Kupi knjigu (5€)
         </button>
-        {/* Pop-up modul za izvrsavanje placanja */}
-        {clientSecret && <CheckoutForm clientSecret={clientSecret} />}
 
+        {/*checkoutform kada initiate payment dobije tajni kljuc (na dodir gumba) */}
+        {clientSecret && <CheckoutForm clientSecret={clientSecret} />} 
       </div>
     </div>
   );

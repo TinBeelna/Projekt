@@ -25,9 +25,19 @@ model Customer {
   email    String  @unique                      // svaki acc drugi mail
 
 }
-
+// U KORAKU (1)
 model paymentIntents {
-  stripePaymentId String   @unique
+  id       Int     @id @default(autoincrement()) // Id je inkrementirani broj
+  email    String  
+  userId   Int
+  role     String  @default("USER")             // Role: "USER" ili "ADMIN"
+  firstName String? 
+  lastName String?
+  status String?
+  amount       Int      @default(0)       // Iznos u centima (Stripe standard)
+  currency     String   @default("eur")   // Valuta
+  items        String?                    // Opis što je kupljeno (može i Json tip)
+  createdAt    DateTime @default(now())   // Da znaš kad je plaćeno
 }
 
 model subscriptions{

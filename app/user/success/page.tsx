@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 
 import { stripe } from '../../lib/stripe'
+import {Stripe} from "stripe"
 
 const SuccessIcon =
   <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -19,7 +20,21 @@ const InfoIcon =
     <path d="M5.75 4C5.75 3.31075 6.31075 2.75 7 2.75C7.68925 2.75 8.25 3.31075 8.25 4C8.25 4.68925 7.68925 5.25 7 5.25C6.31075 5.25 5.75 4.68925 5.75 4Z" fill="white"/>
   </svg>;
 
-const STATUS_CONTENT_MAP = {
+//dozvoljeni keyevi
+type StatusKey = 'succeeded' | 'auth_succeeded' | 'auth_failed' | 'payment_failed' | 'processing' | 'requires_payment_method' | 'default';
+
+
+const STATUS_CONTENT_MAP: Record<StatusKey, any > = {
+  auth_succeeded: {
+    text: "Authentication Successful. Payment succeeded",
+    iconColor: "#30B130",
+    icon: SuccessIcon,
+  },
+  auth_failed: {
+    text: "Authentication Failed. Please try again.",
+    iconColor: "#DF1B41",
+    icon: ErrorIcon,
+  },
   succeeded: {
     text: "Payment succeeded",
     iconColor: "#30B130",
@@ -39,6 +54,11 @@ const STATUS_CONTENT_MAP = {
     text: "Something went wrong, please try again.",
     iconColor: "#DF1B41",
     icon: ErrorIcon,
+  },
+  payment_failed: {
+    text: '',
+    iconColor: '',
+    icon: undefined
   }
 };
 
@@ -47,18 +67,40 @@ export default async function SuccessPage({ searchParams }) {
 
   if (!paymentIntentId) redirect('/')
 
-  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+  expand: ['latest_charge'],
+})
 
   if (!paymentIntent) redirect('/')
 
   const { status } = paymentIntent
 
+  //dodatak za auth provjeru
+  const charge = paymentIntent.latest_charge as Stripe.Charge | null;
+  const is3DS = charge?.payment_method_details?.card?.three_d_secure?.result === "authenticated"; //authenticated?
+  const was3DSAttempted = !!charge?.payment_method_details?.card?.three_d_secure; //je li 3ds bio pokrenut
+
+  let displayKey: StatusKey = "default"; 
+
+if (status === "succeeded") {
+    displayKey = is3DS ? "auth_succeeded" : "succeeded";
+} else if (paymentIntent.last_payment_error?.code === "payment_intent_authentication_failure"){
+    displayKey = "auth_failed";
+} else if (status === "processing") {
+    displayKey = "processing";
+} else if (status === "requires_payment_method") {
+    displayKey = "requires_payment_method";
+}
+
+  const content = STATUS_CONTENT_MAP[displayKey] || STATUS_CONTENT_MAP.default;
+
+
   return (
     <div id="payment-status">
-      <div id="status-icon" style={{backgroundColor: STATUS_CONTENT_MAP[status].iconColor}}>
-        {STATUS_CONTENT_MAP[status].icon}
+      <div id="status-icon" style={{backgroundColor: content.iconColor}}>
+        {content.icon}
       </div>
-      <h2 id="status-text">{STATUS_CONTENT_MAP[status].text}</h2>
+      <h2 id="status-text">{content.text}</h2>
       {paymentIntent && <div id="details-table">
         <table>
           <tbody>

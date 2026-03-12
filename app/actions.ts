@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/app/lib/prisma' // ili putanja gdje si stavio prisma klijenta
+import { prisma } from '@/app/lib/prisma' 
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 
