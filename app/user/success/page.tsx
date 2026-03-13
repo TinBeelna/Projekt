@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 
 import { stripe } from '../../lib/stripe'
 import {Stripe} from "stripe"
+import { prisma } from "@/app/lib/prisma";
 
 const SuccessIcon =
   <svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -62,6 +63,8 @@ const STATUS_CONTENT_MAP: Record<StatusKey, any > = {
   }
 };
 
+
+
 export default async function SuccessPage({ searchParams }) {
   const { payment_intent: paymentIntentId } = await searchParams
 
@@ -70,6 +73,14 @@ export default async function SuccessPage({ searchParams }) {
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
   expand: ['latest_charge'],
 })
+  //invoice pocetak
+  const orderId = paymentIntent.metadata?.orderId;
+  const myOrder = orderId 
+  ? await prisma.paymentIntents.findUnique({
+      where: { id: Number(orderId) } 
+    }) 
+  : null;
+  //invoice kraj
 
   if (!paymentIntent) redirect('/')
 
@@ -95,23 +106,58 @@ if (status === "succeeded") {
   const content = STATUS_CONTENT_MAP[displayKey] || STATUS_CONTENT_MAP.default;
 
 
-  return (
+    return (
     <div id="payment-status">
       <div id="status-icon" style={{backgroundColor: content.iconColor}}>
         {content.icon}
       </div>
       <h2 id="status-text">{content.text}</h2>
-      {paymentIntent && <div id="details-table">
-        <table>
-          <tbody>
-            <tr>
-              <td className="TableLabel">status</td>
-              <td id="intent-status" className="TableContent">{status}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>}
-      <a id="retry-button" href="/">Kupi jos nes</a>
+      
+      {paymentIntent && (
+        <div id="details-table">
+          <table>
+            <tbody>
+              <tr>
+                <td className="TableLabel">Status</td>
+                <td id="intent-status" className="TableContent">{status}</td>
+              </tr>
+              
+              {/* ID iz Stripe metadate */}
+              {paymentIntent.metadata?.orderId && (
+                <tr>
+                  <td className="TableLabel">Broj narudžbe</td>
+                  <td className="TableContent">#{paymentIntent.metadata.orderId}</td>
+                </tr>
+              )}
+
+              {/* Podaci iz tvoje Prisme (Proizvod i Datum) */}
+              {myOrder && (
+                <>
+                  <tr>
+                    <td className="TableLabel">Proizvod</td>
+                    <td className="TableContent">{myOrder.items || "Usluga"}</td>
+                  </tr>
+                  <tr>
+                    <td className="TableLabel">Datum plaćanja</td>
+                    <td className="TableContent">
+                      {new Date(myOrder.createdAt).toLocaleString('hr-HR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </td>
+                  </tr>
+                </>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+      
+      <a id="retry-button" href="/">Kupi još nešto</a>
     </div>
   );
+
 }

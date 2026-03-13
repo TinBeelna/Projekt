@@ -21,6 +21,14 @@ export async function POST(request: Request) {
             signature,
             process.env.STRIPE_WEBHOOK_SECRET as string 
         );
+
+        await prisma.webhook.create({
+            data: {
+                type: event.type,
+                payload: JSON.stringify(event.data.object)
+            }
+        });
+
         //console.log("Stigao webhook:", event.type);
     } catch (err: any) {
         const errorMessage = err.message
@@ -53,6 +61,14 @@ export async function POST(request: Request) {
                             } 
                         });
 
+                        await prisma.invoices.update({
+                            where: { id: orderId1},
+                            data: {
+                                status: "Succeeded",
+                                amount: intent.amount,
+                            } 
+                        });
+
                    // console.log(`Payment status: ${data.status}`)
                     break; }
                 
@@ -68,6 +84,14 @@ export async function POST(request: Request) {
                                 status: "Failed",
                             } 
                         });
+
+                    await prisma.invoices.update({
+                            where: { id: orderId},
+                            data: {
+                                status: "Failed",
+                            } 
+                        });
+
                     break; }                
 
                 default: 

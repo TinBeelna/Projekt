@@ -34,8 +34,8 @@ export function UserNavbar() {
     <aside className="w-80 bg-slate-900 text-white min-h-screen p-6 flex flex-col shadow-xl">
         <nav className="flex flex-col gap-12 flex-1">
             <Link href="/user/user-dashboard" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    🏠 Dashboard
-  </Link>
+      Dashboard
+    </Link>
     <Link href="/user/buypay" className="p-3 hover:bg-slate-800 rounded transition font-medium">
     📦 Buypay
     </Link>
@@ -47,9 +47,6 @@ export function UserNavbar() {
     </Link>
     <Link href="/user/mysubscriptions" className="p-3 hover:bg-slate-800 rounded transition font-medium">
     � My Subscriptions
-    </Link>
-    <Link href="/user/user-dashboard" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-      Dashboard
     </Link>
 </nav>
 <div className="mt-auto">

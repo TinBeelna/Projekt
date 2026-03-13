@@ -36,6 +36,13 @@ export async function POST(req: Request) {
       }
     });
 
+    const newOrderInvoice = await prisma.invoices.create({
+      data: {
+        id: newOrder.id,
+        status: newOrder.status,
+      }
+    });
+
 
     //last update: dodan metadata user/order id (oba su samo inkrementi)
     const paymentIntent = await stripe.paymentIntents.create({

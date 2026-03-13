@@ -19,7 +19,8 @@ export function middleware(request: NextRequest) {
 
     // ako u keksima ne vidimo rolu ADMINa, salji osobu na next response (404)
     if (isAdminPage && userRole !== 'ADMIN') {
-        return NextResponse.next();
+        //return NextResponse.next();
+        return NextResponse.rewrite(new URL('/not-found', request.url));
     }
 
     // logirana osoba ne treba opet na login -> admin na admin dashboard a user na user dashboard

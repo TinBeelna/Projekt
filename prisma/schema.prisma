@@ -40,12 +40,22 @@ model paymentIntents {
   createdAt    DateTime @default(now())   // Da znaš kad je plaćeno
 }
 
+model Webhook {
+  id        Int      @id @default(autoincrement())
+  type      String   
+  payload   String    
+  createdAt DateTime @default(now())
+}
+
 model subscriptions{
   stripePaymentId String   @unique
 }
 
 model invoices{
-  stripePaymentId String   @unique
+  id       Int          @id  
+  amount       Int      @default(0)       
+  createdAt DateTime @default(now())
+  status String?
 }
 
 model refunds{

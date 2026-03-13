@@ -29,7 +29,6 @@ export default async function PaymentsPage() {
         <h1 className="text-3xl font-bold text-gray-900">Moja Plaćanja</h1>
         <p className="text-gray-500">Povijest svih vaših transakcija za {mail}</p>
       </div>
-
       {userPayments.length === 0 ? (
         <div className="bg-gray-50 border-2 border-dashed rounded-xl p-12 text-center text-gray-400">
           Još niste izvršili nijedno plaćanje.
@@ -40,6 +39,7 @@ export default async function PaymentsPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Datum i vrijeme</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Proizvod</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Iznos</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
@@ -51,6 +51,17 @@ export default async function PaymentsPage() {
                   <td className="px-6 py-4 font-mono text-gray-400 text-xs">
                     #{payment.id}
                   </td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {payment.createdAt 
+                    ? new Date(payment.createdAt).toLocaleString('hr-HR', {
+                       day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                        })
+                       : "-"}
+                    </td>
                   <td className="px-6 py-4 font-medium text-gray-900">
                     {payment.items || "Usluga"} 
                   </td>
