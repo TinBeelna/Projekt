@@ -45,6 +45,21 @@ export async function RefundAction(stripeId: string, amountCents: number) {
                 },
             });
 
+
+            if (!currentRecord?.email) {
+                 throw new Error("Email je obavezan za kreiranje refunda");
+            }
+            
+            const newOrderInvoice = await prisma.refunds.create({
+                data: {
+                    stripePaymentId: stripeId,
+                    amount: amountCents,
+                    email: currentRecord?.email,
+                    firstName: currentRecord?.firstName,
+                    lastName: currentRecord?.lastName,
+                }
+                });
+
             revalidatePath("/user/refunds");
             revalidatePath("/admin/refunds");
             return { success: true };

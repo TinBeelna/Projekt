@@ -62,7 +62,12 @@ model invoices{
 }
 
 model refunds{
-  stripePaymentId String   @unique
+  id              Int      @id @default(autoincrement()) @unique
+  stripePaymentId String   
+  amount          Int      @default(0)
+  email           String
+  firstName String? 
+  lastName String?
 }
 
 model disputes{
