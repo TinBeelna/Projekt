@@ -34,10 +34,13 @@ model paymentIntents {
   firstName String? 
   lastName String?
   status String?
-  amount       Int      @default(0)       // Iznos u centima (Stripe standard)
+  amount       Int?      @default(0)       // Iznos u centima (Stripe standard)
   currency     String   @default("eur")   // Valuta
   items        String?                    // Opis što je kupljeno (može i Json tip)
   createdAt    DateTime @default(now())   // Da znaš kad je plaćeno
+  stripeId       String? 
+  capturedAmount Int?                     //za partial capture 
+  refundAmount    Int?                    //za refund funkcionalnost!
 }
 
 model Webhook {

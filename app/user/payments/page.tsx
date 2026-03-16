@@ -70,16 +70,28 @@ export default async function PaymentsPage() {
                     {payment.amount ? (payment.amount / 100).toFixed(2) : "0.00"} EUR
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      payment.status === 'Succeeded' 
-                        ? 'bg-green-100 text-green-800' 
-                        : payment.status === 'Failed' 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {payment.status === 'Succeeded' ? 'Plaćeno' : payment.status === 'Failed' ? 'Neuspjelo' : 'U obradi'}
-                    </span>
-                  </td>
+  {(() => {
+        const status = payment.status?.toLocaleLowerCase();
+    // Definiramo stilove i tekstove za svaki status iz baze
+    switch (payment.status) {
+      case 'Succeeded':
+        return <span className="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-medium">Plaćeno</span>;
+      case 'Partially captured':
+        return <span className="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full text-xs font-medium">Djelomično plaćeno</span>;
+      case 'Capture_required':
+        return <span className="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-xs font-medium">Autorizirano (u obradi)</span>;
+      case 'Charge_refunded':
+        return <span className="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-xs font-medium">Refund prosao</span>;
+      case 'Canceled':  
+        return <span className="bg-gray-100 text-gray-800 px-2.5 py-0.5 rounded-full text-xs font-medium">Otkazano</span>;
+      case 'Failed':
+        return <span className="bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full text-xs font-medium">Neuspjelo</span>;
+      default:
+        return <span className="bg-gray-50 text-gray-500 px-2.5 py-0.5 rounded-full text-xs font-medium">U obradi</span>;
+    }
+  })()}
+</td>
+
                 </tr>
               ))}
             </tbody>

@@ -32,7 +32,8 @@ export async function POST(req: Request) {
         firstName: user.firstName,
         lastName: user.lastName,
         status: "PENDING",
-        items: itemName
+        items: itemName,
+        amount: amount
       }
     });
 
@@ -59,11 +60,18 @@ export async function POST(req: Request) {
         userId: user.id.toString(),
         productName: itemName,
     },
+    capture_method: "manual",
   },
   {
     idempotencyKey: `order_${newOrder.id}`, //idempotency!!!
   }
 );
+    await prisma.paymentIntents.update({ //dodaj stripe ID za manual capture!
+      where: {id: newOrder.id},
+      data: {
+        stripeId: paymentIntent.id
+      },
+    });
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (error: any) {

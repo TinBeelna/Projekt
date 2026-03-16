@@ -84,7 +84,7 @@ function PaymentForm() {
       setMessage(error.message ?? "Error during payment");
       console.log("Stripe error type:", error.type);
       console.log("Stripe error code:", error.code);
-}
+    }
 
 
   setIsLoading(false);
@@ -103,7 +103,7 @@ function PaymentForm() {
         className="mt-4 w-full bg-blue-600 text-white p-2 rounded disabled:opacity-50"
       >
         <span id="button-text">
-          {isLoading ? "Obrađujem..." : "Pay now"}
+          {isLoading ? "Obrađujem..." : "Authorize payment"}
         </span>
       </button>
       {}

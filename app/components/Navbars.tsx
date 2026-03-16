@@ -17,6 +17,9 @@ export function AdminNavbar() {
     <Link href="/admin/webhooks" className="p-3 hover:bg-slate-800 rounded transition font-medium">
     🕒 Webhooks
     </Link>
+    <Link href="/admin/refunds" className="p-3 hover:bg-slate-800 rounded transition font-medium">
+    🔄 Refunds
+    </Link>
 </nav>
 <div className="mt-auto">
     <form action={logoutUser}>

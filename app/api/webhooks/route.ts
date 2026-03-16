@@ -68,7 +68,6 @@ export async function POST(request: Request) {
                                 amount: intent.amount,
                             } 
                         });
-
                    // console.log(`Payment status: ${data.status}`)
                     break; }
                 
@@ -92,8 +91,42 @@ export async function POST(request: Request) {
                             } 
                         });
 
-                    break; }                
+                    break; }
 
+                case 'payment_intent.amount_capturable_updated': {
+                    const intent = event.data.object as Stripe.PaymentIntent; //sigurnije nego intent succeeded
+                    const orderId1 = Number (intent.metadata?.orderId);
+                    await prisma.paymentIntents.update({
+                            where: { id: orderId1},
+                            data: {
+                                status: "Capture_required",
+                                amount: intent.amount,
+                                currency: intent.currency,
+                            } 
+                        });
+
+                        await prisma.invoices.update({
+                            where: { id: orderId1},
+                            data: {
+                                status: "Authorized",
+                                amount: intent.amount,
+                            } 
+                        });
+                break; }
+
+                case 'charge.refunded': {
+                    const refund = event.data.object;
+                    const orderId1 = Number (refund.metadata?.orderId);
+                    await prisma.paymentIntents.update({
+                            where: { id: orderId1},
+                            data: {
+                                status: "Charge_refunded",
+                                amount: refund.amount,
+                                currency: refund.currency,
+                            } 
+                        });
+                    break;}  
+                
                 default: 
                     console.log(`Primljen event: ${event.type}`);
             }

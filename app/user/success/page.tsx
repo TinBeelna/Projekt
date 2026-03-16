@@ -22,7 +22,7 @@ const InfoIcon =
   </svg>;
 
 //dozvoljeni keyevi
-type StatusKey = 'succeeded' | 'auth_succeeded' | 'auth_failed' | 'payment_failed' | 'processing' | 'requires_payment_method' | 'default';
+type StatusKey = 'succeeded' | 'auth_succeeded' | 'auth_failed' | 'payment_failed' | 'processing' | 'requires_payment_method' | 'requires_capture' | 'default';
 
 
 const STATUS_CONTENT_MAP: Record<StatusKey, any > = {
@@ -57,10 +57,15 @@ const STATUS_CONTENT_MAP: Record<StatusKey, any > = {
     icon: ErrorIcon,
   },
   payment_failed: {
-    text: '',
+    text: 'PAYMENT FAILED!!!',
     iconColor: '',
     icon: undefined
-  }
+  },
+  requires_capture: {
+    text: "Authentication Successful. Awaiting for capture from admin",
+    iconColor: "#30B130",
+    icon: SuccessIcon,
+  },
 };
 
 
@@ -101,6 +106,8 @@ if (status === "succeeded") {
     displayKey = "processing";
 } else if (status === "requires_payment_method") {
     displayKey = "requires_payment_method";
+} else if (status === 'requires_capture') {
+    displayKey = 'requires_capture'
 }
 
   const content = STATUS_CONTENT_MAP[displayKey] || STATUS_CONTENT_MAP.default;
