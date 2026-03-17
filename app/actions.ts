@@ -3,6 +3,8 @@
 import { prisma } from '@/app/lib/prisma' 
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
+import { stripe } from "@/app/lib/stripe";
+
 
 
 export async function loginUser(formData: FormData) {
@@ -30,7 +32,7 @@ export async function loginUser(formData: FormData) {
     secure: process.env.NODE_ENV === 'production',
     path: '/',
 });
-
+    //stripe create customer if not created yet (for older users)
 if (user.role === 'ADMIN') {
   redirect(`/admin/admin-dashboard`);
 } else {
@@ -60,6 +62,25 @@ export async function registerUser(formData: FormData) {
             email: email, password: password, firstName: firstName, lastName: lastName, role: 'USER' // svi koji se registriraju su USER, samo admini su ADMIN
         }
     })
+    //Stripe create customer
+    const customer = await stripe.customers.create({
+        name: firstName + " " + lastName,
+        email: email,
+        metadata: {
+            role: 'USER',
+            id: newUser.id,
+        }, 
+         description: 'User registered on website',
+        }, {
+  idempotencyKey: `user-${newUser.id}-creation`, // protiv duplih izrada
+    });
+
+    await prisma.user.update({ //dodatak stripeID na usera
+    where: { id: newUser.id },
+    data: {
+        stripeId: customer.id 
+    }
+});
 
     const cookieStore = await cookies();
     cookieStore.set('userEmail', newUser.email, { //cookies za pamcenje logina

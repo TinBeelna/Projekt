@@ -127,6 +127,26 @@ export async function POST(request: Request) {
                         });
                     break;}  
                 
+                    case 'checkout.session.completed': { //za sub
+                        const session = event.data.object as Stripe.Checkout.Session;
+                        if (session.subscription) {
+                            const plan = session.metadata?.plan;
+                            const email = session.metadata?.userEmail;
+                            const subscriptionId = session.subscription as string;
+                            const customerId = session.customer as string;
+                            
+                            if (plan && email) {
+                            await prisma.subscriptions.create({
+                            data: {
+                                stripePaymentId: subscriptionId, // PRAVI SUB ID!
+                                plan: plan,
+                                userStripeId: customerId,
+                            }
+                            });
+
+                        }
+                    }
+                    break;}
                 default: 
                     console.log(`Primljen event: ${event.type}`);
             }

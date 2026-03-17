@@ -12,6 +12,7 @@ generator client {
 
 model User {
   id       Int     @id @default(autoincrement()) // Id je inkrementirani broj
+  stripeId String?  @unique
   email    String  @unique                      // svaki acc drugi mail
   password String                               // lozinka klasicni string samo
   role     String  @default("USER")             // Role: "USER" ili "ADMIN"
@@ -52,6 +53,8 @@ model Webhook {
 
 model subscriptions{
   stripePaymentId String   @unique
+  plan            String          //mjesec, godina...
+  userStripeId    String 
 }
 
 model invoices{
