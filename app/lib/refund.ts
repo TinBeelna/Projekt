@@ -3,14 +3,14 @@ import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache"; //bez osvjezavanja (F5) admin vidi request
 import { stripe } from "@/app/lib/stripe";
 
-export async function requestRefundAction(stripeId: string, amountCents: number) {
+export async function requestRefundAction(stripeId: string, amount: number) {
     await prisma.paymentIntents.updateMany({
         where: { 
             stripeId: stripeId 
         },
         data: {
             status: "REQUESTED_REFUND",
-            refundAmount: amountCents, 
+            refundAmount: amount,
         }
     });
 
@@ -18,11 +18,12 @@ export async function requestRefundAction(stripeId: string, amountCents: number)
     revalidatePath("/admin/refunds");
 }
 
-export async function RefundAction(stripeId: string, amountCents: number) {
+export async function RefundAction(stripeId: string, amount: number, currency: string) {
     try {
         const refund = await stripe.refunds.create({
             payment_intent: stripeId,
-            amount: amountCents,
+            amount: amount,
+           // currency: currency, NIJE POTREBAN I NE KORISTI SE!!! STRIPE AUTOMATSKI VRACA U ISTOJ VALUTI!!!
         });
 
         if (refund.status === "succeeded" || refund.status === "pending") {
@@ -32,7 +33,7 @@ export async function RefundAction(stripeId: string, amountCents: number) {
             const currentBalance = currentRecord?.capturedAmount ?? currentRecord?.amount ?? 0;
             
             // oduzmi refund od te vrijednosti (sada imamo koliko se jos da refundati)
-            const newBalance = Math.max(0, currentBalance - amountCents);
+            const newBalance = Math.max(0, currentBalance - amount);
 
             await prisma.paymentIntents.updateMany({
                 where: { stripeId },
@@ -48,7 +49,7 @@ export async function RefundAction(stripeId: string, amountCents: number) {
             await prisma.refunds.create({
                 data: {
                     stripePaymentId: stripeId,
-                    amount: amountCents,
+                    amount: amount,
                     email: currentRecord.email,
                     firstName: currentRecord.firstName,
                     lastName: currentRecord.lastName,

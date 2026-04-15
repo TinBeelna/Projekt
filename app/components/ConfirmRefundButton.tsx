@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { RefundAction } from "@/app/lib/refund"; 
 
-export default function AdminExecuteRefund({ stripeId, amountCents }: { stripeId: string, amountCents: number }) {
+export default function AdminExecuteRefund({ stripeId, amountCents, currency }: { stripeId: string, amountCents: number, currency: string }) {
   const [isPending, setIsPending] = useState(false);
 
   return (
@@ -16,7 +16,7 @@ export default function AdminExecuteRefund({ stripeId, amountCents }: { stripeId
         setIsPending(true);
         try {
           // 1. Capture the result of the action
-          const result = await RefundAction(stripeId, amountCents); 
+          const result = await RefundAction(stripeId, amountCents, currency); 
           
           // 2. Check if it was a real refund or just a sync
           if (result?.message?.includes("Chargeback") || result?.message?.includes("Already")) {

@@ -6,14 +6,14 @@ import { prisma } from "app/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { amount, itemName } = await req.json();
+    const { amount, itemName, currency } = await req.json();
 
     //dodatak: preko keksica maila dobivam usera
     const cookie = await cookies();
     const email = cookie.get("userEmail")?.value;
 
     if(!email) {
-      notFound(); 
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); 
     }
 
     const user = await prisma.user.findUnique({ //user po mailu iz cookies
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         userId: user.id,
         total: amount,
         status: "PENDING",
-        currency: "eur",
+        currency: currency,
         items: itemName,
       }
     });
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     //last update: dodan metadata user/order id (oba su samo inkrementi)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount,
-      currency: "eur",
+      currency: currency as string,
       payment_method_options: {
         card: {
           request_three_d_secure: 'any',

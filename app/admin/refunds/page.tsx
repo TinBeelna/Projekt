@@ -70,11 +70,11 @@ export default async function AdminRefundsPage() {
                       </td>
                       
                       <td className="px-6 py-4 text-sm font-bold text-blue-700">
-                        {(currentRemaining / 100).toFixed(2)} EUR
+                        {(currentRemaining / 100).toFixed(2)} {req.currency}
                       </td>
 
                       <td className="px-6 py-4 text-sm font-black text-red-600">
-                        {((req.refundAmount || 0) / 100).toFixed(2)} EUR
+                        {((req.refundAmount || 0) / 100).toFixed(2)} {req.currency}
                       </td>
 
                       <td className="px-6 py-4">
@@ -88,7 +88,8 @@ export default async function AdminRefundsPage() {
                       <td className="px-6 py-4 text-center">
                           <AdminExecuteRefund 
                             stripeId={req.stripeId!} 
-                            amountCents={req.refundAmount || 0} 
+                            amountCents={req.refundAmount || 0}
+                            currency={req.currency} 
                           />
                       </td>
                     </tr>

@@ -21,7 +21,7 @@ export default async function AdminDashboardPage() {
               <th className="p-4">User ID</th>
               <th className="p-4">Kupac (Email)</th>
               <th className="p-4">Proizvod / Item</th>
-              <th className="p-4">Iznos (EUR)</th>
+              <th className="p-4">Iznos:</th>
               <th className="p-4 text-center">Akcije</th>
             </tr>
           </thead>
@@ -40,7 +40,7 @@ export default async function AdminDashboardPage() {
                   {order.items || "Nije navedeno"}
                 </td>
                 <td className="p-4 font-bold text-green-700">
-                  {((order.amount || 0) / 100).toFixed(2)} €
+                  {((order.amount || 0) / 100).toFixed(2)} ({order.currency as string})
                 </td>
                 <td className="p-4">
                   <div className="flex justify-center">

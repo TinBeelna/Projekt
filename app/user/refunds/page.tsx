@@ -59,15 +59,15 @@ export default async function RefundsPage() {
                   <tr key={payment.id} className={isWaiting ? "bg-amber-50" : ""}>
                     <td className="px-6 py-4 font-mono text-xs">#{payment.id}</td>
                     <td className="px-6 py-4 text-blue-700 font-bold">
-                      {(currentBalanceCents / 100).toFixed(2)} EUR
+                      {(currentBalanceCents / 100).toFixed(2)} {payment.currency}
                     </td>
                     <td className="px-6 py-4 text-center">
                       {isWaiting ? (
                         <span className="text-amber-600 font-bold text-[10px]">ČEKA OBRADU</span>
                       ) : (
                         <div className="flex justify-center gap-2">
-                          <FullRefundButton stripeId={payment.stripeId || ""} amountCents={currentBalanceCents} />
-                          <PartialRefundButton stripeId={payment.stripeId || ""} maxAmountCents={currentBalanceCents} />
+                          <FullRefundButton stripeId={payment.stripeId || ""} amountCents={currentBalanceCents} currency ={payment.currency}/>
+                          <PartialRefundButton stripeId={payment.stripeId || ""} maxAmountCents={currentBalanceCents} currency ={payment.currency}/>
                         </div>
                       )}
                     </td>

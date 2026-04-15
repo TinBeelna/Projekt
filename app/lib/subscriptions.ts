@@ -6,14 +6,14 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from "next/cache";
 
 
-const PRICE_IDS = {
+const PRICE_IDS_EUR = {
   weekly: "price_1TBtA6LrpwzLPald0XAcYc2W",
   monthly: "price_1TBtA6LrpwzLPalde3oLQBid",
   three_months: "price_1TBtA6LrpwzLPald60ILheZK",
   yearly: "price_1TBtA6LrpwzLPalduovKrRMV",
 };
 
-type Duration = keyof typeof PRICE_IDS;
+type Duration = keyof typeof PRICE_IDS_EUR;
 
 //za update kartice (u slucaju faila)
 export async function createCustomerPortal() {
@@ -41,7 +41,7 @@ export async function createCustomerPortal() {
 
 
 export async function requestSubscription(duration: Duration) {
-    const priceId = PRICE_IDS[duration];
+    const priceId = PRICE_IDS_EUR[duration];
     const cookieStore = await cookies(); 
     const userEmail = cookieStore.get('userEmail')?.value;
 
@@ -134,7 +134,7 @@ export async function cancelSubscriptionAtPeriodEnd(subId: string) {
 
 export async function updateSubscription(subId: string, plan: Duration){
 
-    const newPriceId = PRICE_IDS[plan];
+    const newPriceId = PRICE_IDS_EUR[plan];
     const subscription = await stripe.subscriptions.retrieve(subId);
     const itemId = subscription.items.data[0].id; //zadnja
 
@@ -154,6 +154,10 @@ export async function updateSubscription(subId: string, plan: Duration){
     });
     revalidatePath("/user/subscriptions"); 
     revalidatePath("/admin/subscriptions");
+    }
+
+    export async function createSubscriptionPrice(subId: string, plan: Duration, currency: string ) {
+        
     }
 
 

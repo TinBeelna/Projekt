@@ -14,12 +14,12 @@ export async function listPayouts() {
     //     currency: 'eur',
     //     });
 
-    // const charge = await stripe.charges.create({
-    // amount: 20000, 
-    // currency: 'eur',
-    // source: 'tok_bypassPending', // Test token that always succeeds
-    // description: 'Test charge to increase balance',
-    // });
+    const charge = await stripe.charges.create({
+    amount: 200, 
+    currency: 'usd',
+    source: 'tok_bypassPending', // Test token that always succeeds
+    description: 'Test charge to increase balance',
+    });
 
     const payoutsList = await stripe.payouts.list({})
 

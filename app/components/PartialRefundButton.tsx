@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { requestRefundAction } from "@/app/lib/refund";
 
-export default function PartialRefundButton({ stripeId, maxAmountCents }: { stripeId: string, maxAmountCents: number }) {
+export default function PartialRefundButton({ stripeId, maxAmountCents, currency }: { stripeId: string, maxAmountCents: number, currency: string }) {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +33,7 @@ export default function PartialRefundButton({ stripeId, maxAmountCents }: { stri
         type="number" 
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        placeholder="EUR"
+        placeholder = {currency.toUpperCase()}
         className="border rounded px-2 py-1 text-xs w-20 outline-none focus:ring-1 focus:ring-blue-400"
       />
       <button 

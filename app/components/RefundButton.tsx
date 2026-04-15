@@ -5,15 +5,17 @@ import { requestRefundAction } from "@/app/lib/refund";
 
 export default function FullRefundButton({ 
   stripeId, 
-  amountCents 
+  amountCents,
+  currency 
 }: { 
   stripeId: string, 
-  amountCents: number 
+  amountCents: number,
+  currency: string 
 }) {
   const [loading, setLoading] = useState(false);
 
   const handleFullRefundRequest = async () => {
-    if (!confirm(`Zatražiti puni povrat od ${(amountCents / 100).toFixed(2)} EUR?`)) return;
+    if (!confirm(`Zatražiti puni povrat od ${(amountCents / 100).toFixed(2)} ${currency}?`)) return;
 
     setLoading(true);
     try {
