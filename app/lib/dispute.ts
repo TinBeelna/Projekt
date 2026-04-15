@@ -6,7 +6,8 @@ import { revalidatePath } from "next/cache";
 export async function getIntentDisputes(payment_intent_id: string) {
 
     const disputes = await prisma.disputes.findMany({
-        where: {paymentStripeId: payment_intent_id }
+        where: { paymentStripeId: payment_intent_id },
+        include: { paymentIntent: true },
     })
 
     return disputes.map(disp => ({
@@ -18,6 +19,7 @@ export async function getIntentDisputes(payment_intent_id: string) {
         amount: disp.amount,
         chargeId: disp.chargeId,
         id: disp.id,
+        currency: disp.paymentIntent?.currency, //dodano za valutu u dispute UIu!
     }));
 }
 

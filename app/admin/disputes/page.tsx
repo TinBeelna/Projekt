@@ -62,7 +62,7 @@ export default function DisputeSection({ stripeId }: { stripeId: string }) {
                 
                 <div className="text-right">
                   <span className="block text-[10px] font-bold uppercase text-gray-400 tracking-wider">Amount:</span>
-                  <p className="text-lg font-bold text-gray-900">€{(dispute.amount / 100).toFixed(2)}</p>
+                  <p className="text-lg font-bold text-gray-900">{(dispute.currency)} {(dispute.amount / 100).toFixed(2)}</p>
                   <p className="text-[10px] text-gray-400 capitalize">{dispute.reason?.replace(/_/g, ' ')}</p>
                 </div>
               </div>
