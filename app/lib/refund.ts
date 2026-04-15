@@ -28,10 +28,10 @@ export async function RefundAction(stripeId: string, amountCents: number) {
         if (refund.status === "succeeded" || refund.status === "pending") {
             const currentRecord = await prisma.paymentIntents.findFirst({ where: { stripeId } });
             
-            // 1. Determine the REAL current balance
+            // Koliko je trenutno izvuceno iz tranzakcije
             const currentBalance = currentRecord?.capturedAmount ?? currentRecord?.amount ?? 0;
             
-            // 2. Subtract THIS refund from that balance
+            // oduzmi refund od te vrijednosti (sada imamo koliko se jos da refundati)
             const newBalance = Math.max(0, currentBalance - amountCents);
 
             await prisma.paymentIntents.updateMany({
@@ -43,7 +43,6 @@ export async function RefundAction(stripeId: string, amountCents: number) {
                 },
             });
 
-            // 3. Create the invoice/log entry
             if (!currentRecord?.email) throw new Error("Email je obavezan");
             
             await prisma.refunds.create({
@@ -62,23 +61,21 @@ export async function RefundAction(stripeId: string, amountCents: number) {
         }
     } catch (error: any) {
         const message = error.message.toLowerCase();
-        const isAlreadyRefunded = error.code === 'charge_already_refunded' || message.includes("has already been refunded");
+        const isAlreadyRefunded = error.code === 'charge_already_refunded' || message.includes("has already been refunded"); //za handleanje "already refunded" slucaja
         const isChargedBack = message.includes("charged back");
 
-        if (isAlreadyRefunded || isChargedBack) {
-            // 1. We ONLY set capturedAmount to 0 if the bank took everything (Chargeback)
-            // If it was "already refunded", we just clear the pending request 
-            // but keep the current balance so partial refunds still work.
+        if (isAlreadyRefunded || isChargedBack) { //ako je "already refunded" (error koji sam dobivao) cisti se pending status ali se zadrzi stat balansa da partial refundi rade
+
             await prisma.paymentIntents.updateMany({
                 where: { stripeId },
                 data: { 
-                    status: isChargedBack ? "CHARGED_BACK" : "Succeeded", 
+                    status: isChargedBack ? "CHARGED_BACK" : "Succeeded", //charged back ako je, inace succeeded
                     refundAmount: 0, 
-                    ...(isChargedBack && { capturedAmount: 0 }) 
+                    ...(isChargedBack && { capturedAmount: 0 }) //captured amount u 0 ako user napravi puni refund (ili sa vise njih dode do punog)
                 }
             });
 
-            // 2. Clear the specific admin request so it disappears from the list
+            // cisti se request da vise nije na listi
             await prisma.refunds.deleteMany({
                 where: { stripePaymentId: stripeId }
             });
@@ -86,7 +83,7 @@ export async function RefundAction(stripeId: string, amountCents: number) {
             revalidatePath("/user/refunds");
             revalidatePath("/admin/refunds");
 
-            return { success: true, message: "Sync complete." };
+            return { success: true, message: "Refund gotov." };
         }
         
         throw new Error(error.message);
