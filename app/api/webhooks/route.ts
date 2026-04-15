@@ -235,6 +235,7 @@ export async function POST(request: Request) {
                                         plan: plan,
                                         userStripeId: customerId,
                                         status: subscription.status,
+                                        currency: subscription.currency,
                                     }
                                     });
                                     console.log('NAPRAVIO SUBSCRIPTION!!');

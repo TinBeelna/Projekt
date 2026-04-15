@@ -36,7 +36,8 @@ export default async function MySubscriptionsPage() {
     <div className="max-w-2xl mx-auto p-10 space-y-10">
       <section>
         <h1 className="text-3xl font-bold mb-6">Moja Pretplata</h1>
-         <h4 className="text-sm ">Note: u slucaju downgradea, daje se "kredit" za buduce pretplate</h4>
+         <h4 className="text-sm ">Note 1: U slučaju downgradea, daje se "kredit" za buduce pretplate</h4>
+         <h4 className="text-sm ">Note 2: U slučaju ažuriranja pretplate (upgrade/downgrade) valuta plaćanja se ne može mijenjati </h4>
         {activeSubscriptions.length === 0 ? (
           <p className="text-gray-500 bg-gray-50 p-4 rounded-lg border border-dashed text-center">
             Trenutno nemate aktivnih pretplata.

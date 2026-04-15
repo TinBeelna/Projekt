@@ -128,7 +128,7 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
           onClick={() => initiatePayment("Knjiga", convertPrice(500), FXcurrency)}
           className="bg-blue-600 text-white"
         >
-          Kupi knjigu (Cijena: {displayPrice(200)})
+          Kupi knjigu (Cijena: {displayPrice(500)})
         </button>
 
         {/*checkoutform kada initiate payment dobije tajni kljuc (na dodir gumba) */}

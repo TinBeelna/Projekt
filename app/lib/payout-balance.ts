@@ -14,28 +14,33 @@ export async function listPayouts() {
     //     currency: 'eur',
     //     });
 
-    const charge = await stripe.charges.create({
-    amount: 200, 
-    currency: 'usd',
-    source: 'tok_bypassPending', // Test token that always succeeds
-    description: 'Test charge to increase balance',
-    });
+    // const charge = await stripe.charges.create({
+    // amount: 200, 
+    // currency: 'usd',
+    // source: 'tok_bypassPending', // Test token that always succeeds
+    // description: 'Test charge to increase balance',
+    // });
 
     const payoutsList = await stripe.payouts.list({})
 
     return payoutsList;
 }
 
-export async function showAvailableBalance() {
+export async function getWalletBalance(walletCurrency: string) {
+    try {
 
-    const balance = await stripe.balance.retrieve();
+        const balance = await stripe.balance.retrieve();
+        
+        const available = balance.available.find( b => b.currency === walletCurrency);
+        const pending = balance.pending.find( b => b.currency === walletCurrency);
+        return {
+            available: available ? available.amount : 0,
+            pending: pending ? pending.amount : 0,
+            currency: walletCurrency
+            };
+    } catch (err) {
+        console.error('Error tijekom uzimanja wallet infa: ', err)
+    }
 
-    return balance.available;
-}
-
-export async function showPendingBalance() {
-
-    const balance = await stripe.balance.retrieve();
-
-    return balance.pending;
+    
 }

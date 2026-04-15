@@ -6,14 +6,21 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from "next/cache";
 
 
-const PRICE_IDS_EUR = {
-  weekly: "price_1TBtA6LrpwzLPald0XAcYc2W",
-  monthly: "price_1TBtA6LrpwzLPalde3oLQBid",
-  three_months: "price_1TBtA6LrpwzLPald60ILheZK",
-  yearly: "price_1TBtA6LrpwzLPalduovKrRMV",
-};
+// const PRICE_IDS_EUR = { //cijene, ali samo u eurima
+//   weekly: "price_1TBtA6LrpwzLPald0XAcYc2W",
+//   monthly: "price_1TBtA6LrpwzLPalde3oLQBid",
+//   three_months: "price_1TBtA6LrpwzLPald60ILheZK",
+//   yearly: "price_1TBtA6LrpwzLPalduovKrRMV",
+// };
 
-type Duration = keyof typeof PRICE_IDS_EUR;
+const PRICE_IDS = { //dodane cijene sa USD/GBP opcijom
+    weekly: "price_1TMRnMLrpwzLPaldmyHxqgit",
+    monthly: "price_1TMRoJLrpwzLPald4W0VQ3vT",
+    three_months: "price_1TMRpSLrpwzLPaldIm8Hg6di",
+    yearly: "price_1TMRq6LrpwzLPaldAYHeVL2e",
+}
+
+type Duration = keyof typeof PRICE_IDS;
 
 //za update kartice (u slucaju faila)
 export async function createCustomerPortal() {
@@ -40,8 +47,8 @@ export async function createCustomerPortal() {
 }
 
 
-export async function requestSubscription(duration: Duration) {
-    const priceId = PRICE_IDS_EUR[duration];
+export async function requestSubscription(duration: Duration, currency: string) {
+    const priceId = PRICE_IDS[duration];
     const cookieStore = await cookies(); 
     const userEmail = cookieStore.get('userEmail')?.value;
 
@@ -59,7 +66,6 @@ export async function requestSubscription(duration: Duration) {
     }
 
     //u slucaju da postoji default kartica (znaci da ima upisanu karticu) pretplata se odmah radi; nema checkout sessiona
-
     const defaultMethod = await prisma.paymentMethod.findFirst({
         where: {
             stripeId: user.stripeId,
@@ -72,9 +78,10 @@ export async function requestSubscription(duration: Duration) {
         const subcription = await stripe.subscriptions.create({
             customer: user.stripeId,
             items: [
-                {price: priceId}
+                {price: priceId,}
             ],
             default_payment_method: defaultMethod.paymentMethodId,
+            currency: currency,
         });
         console.log('Postoji default: pretplata se radi automatski');
     } else { 
@@ -83,6 +90,7 @@ export async function requestSubscription(duration: Duration) {
         const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'], 
+        currency: currency,
         line_items: [{ price: priceId, quantity: 1 }],
         customer: user?.stripeId || undefined, 
         customer_email: !user?.stripeId ? userEmail : undefined, // mail ako nema IDa
@@ -96,11 +104,9 @@ export async function requestSubscription(duration: Duration) {
             userEmail: userEmail || "unknown",
         },
         saved_payment_method_options: {
-            payment_method_save: 'enabled',
-            //allow_redisplay_filters: ['always', 'limited', 'unspecified'], //pokusaj za prikaz sejvd kartice
-        },
-        payment_method_collection: 'if_required', //'always', //u slucaju da ima sejvana default kartica, pre filled je
-        customer_update: { //sejvaj ako promjeni u checkoutu
+            payment_method_save: 'enabled',        },
+        payment_method_collection: 'if_required', 
+        customer_update: { 
             name: 'auto',
             address: 'auto',
         },
@@ -134,7 +140,7 @@ export async function cancelSubscriptionAtPeriodEnd(subId: string) {
 
 export async function updateSubscription(subId: string, plan: Duration){
 
-    const newPriceId = PRICE_IDS_EUR[plan];
+    const newPriceId = PRICE_IDS[plan];
     const subscription = await stripe.subscriptions.retrieve(subId);
     const itemId = subscription.items.data[0].id; //zadnja
 
@@ -156,8 +162,5 @@ export async function updateSubscription(subId: string, plan: Duration){
     revalidatePath("/admin/subscriptions");
     }
 
-    export async function createSubscriptionPrice(subId: string, plan: Duration, currency: string ) {
-        
-    }
 
 
