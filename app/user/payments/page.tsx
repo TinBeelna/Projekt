@@ -67,7 +67,7 @@ export default async function PaymentsPage() {
                   </td>
                   <td className="px-6 py-4 text-gray-700">
                     {/* Stripe iznos dijeliš sa 100 za eure */}
-                    {payment.amount ? (payment.amount / 100).toFixed(2) : "0.00"} EUR
+                    {payment.amount ? (payment.amount / 100).toFixed(2) : "0.00"} {payment.currency}
                   </td>
                   <td className="px-6 py-4">
   {(() => {

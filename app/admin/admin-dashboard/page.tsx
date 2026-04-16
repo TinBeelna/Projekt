@@ -17,23 +17,23 @@ export default async function AdminDashboardPage() {
         <table className="w-full text-left bg-white">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="p-4">Order ID</th>
-              <th className="p-4">User ID</th>
-              <th className="p-4">Kupac (Email)</th>
-              <th className="p-4">Proizvod / Item</th>
-              <th className="p-4">Iznos:</th>
-              <th className="p-4 text-center">Akcije</th>
+              <th className="p-4"> Order ID </th>
+              <th className="p-4"> User ID </th>
+              <th className="p-4"> Kupac (Email) </th>
+              <th className="p-4"> Proizvod / Item </th>
+              <th className="p-4"> Iznos:</th>
+              <th className="p-4 text-center"> Akcije </th>
             </tr>
           </thead>
           <tbody>
             {pendingOrders.map((order) => (
               <tr key={order.id} className="border-b hover:bg-gray-50">
-                <td className="p-4 font-mono text-sm text-gray-500">#{order.id}</td>
-                <td className="p-4 text-sm">ID: {order.userId || "Gost"}</td>
+                <td className="p-4 font-mono text-sm text-gray-500"> #{order.id} </td>
+                <td className="p-4 text-sm"> ID: {order.userId || "Gost"} </td>
                 <td className="p-4">
                   <div className="flex flex-col">
-                    <span className="font-medium">{order.firstName} {order.lastName}</span>
-                    <span className="text-xs text-gray-400">{order.email}</span>
+                    <span className="font-medium"> {order.firstName} {order.lastName} </span>
+                    <span className="text-xs text-gray-400"> {order.email} </span>
                   </div>
                 </td>
                 <td className="p-4 italic text-sm">

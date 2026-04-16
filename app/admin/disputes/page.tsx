@@ -67,7 +67,7 @@ export default function DisputeSection({ stripeId }: { stripeId: string }) {
                 </div>
               </div>
 
-              {/* Show controls ONLY if Editable */}
+              {/* Ako je editable, prikaži prozor za dodavanje argumenta */}
               {isEditable ? (
                 <>
                   <div className="mb-4">

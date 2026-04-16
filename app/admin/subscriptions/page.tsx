@@ -51,7 +51,7 @@ export default async function SubscriptionsPage() {
                     {sub.stripePaymentId}
                   </td>
                   <td className="px-6 py-4 text-sm font-bold text-gray-900">
-                    {totalPaidEuro} EUR
+                    {totalPaidEuro} {sub.currency}
                   </td>
                 {/* CANCEL BUTTON */}
                <td className="px-6 py-4 text-sm">

@@ -73,6 +73,7 @@ model subscriptions{
   plan            String          //mjesec, godina...
   userStripeId    String 
   status          String  @default("active")
+  currency        String  @default("eur")
   invoices  Invoice[] 
 }
 
