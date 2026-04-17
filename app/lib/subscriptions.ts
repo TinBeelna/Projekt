@@ -131,8 +131,14 @@ export async function cancelSubscriptionAtPeriodEnd(subId: string) {
         subId,
         {
         cancel_at_period_end: true,
+        });
+
+    await prisma.subscriptions.update({ //dodano za funkcionalnost user cancela (at period end)
+        where: { stripePaymentId: subId },
+        data: { 
+            cancelAtPeriodEnd: true,
         }
-);
+    });
 
      revalidatePath("/user/subscriptions");
      revalidatePath("/admin/subscriptions");

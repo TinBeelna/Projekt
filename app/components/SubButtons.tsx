@@ -4,7 +4,7 @@ import { requestSubscription, updateSubscription, cancelSubscriptionAtPeriodEnd,
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 
-export default function SubscriptionButtons({ activeSubId, currentPlan, status }: { activeSubId?: string, currentPlan?: string, status?: string }) {
+export default function SubscriptionButtons({ activeSubId, currentPlan, status, cancelAtPeriodEnd, endDate }: { activeSubId?: string, currentPlan?: string, status?: string, cancelAtPeriodEnd: boolean, endDate?: Date }) {
   const router = useRouter();
 
   const plans = [
@@ -113,56 +113,79 @@ export default function SubscriptionButtons({ activeSubId, currentPlan, status }
                   OTKAŽI ODMAH
                 </button>
               </div>
-            ) : (
-              <button 
-                onClick={async () => {
-                  if (confirm("Trajno otkazati pretplatu?")) {
-                    await cancelSubscriptionAtPeriodEnd(activeSubId);
-                    router.refresh();
-                  }
-                }}
-                className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition border border-red-100"
-              >
-                OTKAŽI (na kraju perioda)
-              </button>
-            )}
-          </div>
-        </div>
+            ) : cancelAtPeriodEnd ? (
+  <div className="text-xs font-bold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-2 rounded-xl">
+    Otkazano — završava:{" "}
+    <span className="text-gray-800">
+      {endDate
+        ? new Date(endDate).toLocaleDateString("hr-HR")
+        : "Nepoznato"}
+    </span>
+  </div>
+      ) : (
+        <button 
+          onClick={async () => {
+            if (confirm("Trajno otkazati pretplatu do kraja perioda?")) {
+              await cancelSubscriptionAtPeriodEnd(activeSubId);
+              router.refresh();
+            }
+          }}
+          className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition border border-red-100"
+        >
+          OTKAŽI (na kraju perioda)
+        </button>
       )}
+          </div>
+    </div>
+    )}
 
       {/* Upgrade */}
-      {activeSubId && upgrades.length > 0 && (
+      {activeSubId && !cancelAtPeriodEnd && upgrades.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-xs font-bold text-green-600 uppercase px-1 tracking-widest">Nadogradnja ↑</h3>
+          <h3 className="text-xs font-bold text-green-600 uppercase px-1 tracking-widest">
+            Nadogradnja ↑
+          </h3>
+
           {upgrades.map((plan) => (
-            <button 
+            <button
               key={plan.id}
               onClick={() => updateSubscription(activeSubId, plan.id as any)}
               className="w-full flex justify-between items-center p-4 bg-white border-2 border-green-50 rounded-xl hover:border-green-500 transition shadow-sm group"
             >
-              <span className="font-bold text-gray-800">{plan.label} {getPrice(plan)} {selectedCurrency.toUpperCase()}</span>
-              <span className="bg-green-500 text-white text-[10px] px-3 py-1 rounded-lg font-black group-hover:scale-105 transition uppercase">: Nadogradi</span>
+              <span className="font-bold text-gray-800">
+                {plan.label} {getPrice(plan)} {selectedCurrency.toUpperCase()}
+              </span>
+              <span className="bg-green-500 text-white text-[10px] px-3 py-1 rounded-lg font-black group-hover:scale-105 transition uppercase">
+                : Nadogradi
+              </span>
             </button>
           ))}
         </div>
       )}
 
       {/* downgrade */}
-      {activeSubId && downgrades.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold text-gray-400 uppercase px-1 tracking-widest">Smanjenje paketa ↓</h3>
-          {downgrades.map((plan) => (
-            <button 
-              key={plan.id}
-              onClick={() => updateSubscription(activeSubId, plan.id as any)}
-              className="w-full flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl hover:border-gray-400 transition group"
-            >
-              <span className="font-medium text-gray-500">{plan.label} {getPrice(plan)} {selectedCurrency.toUpperCase()}</span>
-              <span className="bg-gray-100 text-gray-500 text-[10px] px-3 py-1 rounded-lg font-black group-hover:bg-gray-200 transition uppercase">: Smanji</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {activeSubId && !cancelAtPeriodEnd && downgrades.length > 0 && (
+  <div className="space-y-3">
+    <h3 className="text-xs font-bold text-gray-400 uppercase px-1 tracking-widest">
+      Smanjenje paketa ↓
+    </h3>
+
+    {downgrades.map((plan) => (
+        <button
+          key={plan.id}
+          onClick={() => updateSubscription(activeSubId, plan.id as any)}
+          className="w-full flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl hover:border-gray-400 transition group"
+        >
+          <span className="font-medium text-gray-500">
+            {plan.label} {getPrice(plan)} {selectedCurrency.toUpperCase()}
+          </span>
+          <span className="bg-gray-100 text-gray-500 text-[10px] px-3 py-1 rounded-lg font-black group-hover:bg-gray-200 transition uppercase">
+            : Smanji
+          </span>
+        </button>
+      ))}
+    </div>
+  )}
 
       {/* kupi (+ odabir valute) */}
       {!activeSubId && (

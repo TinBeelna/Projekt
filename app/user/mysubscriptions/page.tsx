@@ -18,7 +18,7 @@ export default async function MySubscriptionsPage() {
 
   const latestSubId = activeSubscriptions[0]?.stripePaymentId;
   const latestSubPlan = activeSubscriptions[0]?.plan;
-
+  
   //invoice handling
   const invoices = await prisma.invoice.findMany({
       where: { 
@@ -31,6 +31,11 @@ export default async function MySubscriptionsPage() {
       orderBy: { createdAt: 'desc' },
       include: { subscription: true} //za naziv plana
   });
+
+  const latestInvoice = invoices?.[0];
+  const endDate = latestInvoice?.periodEnd;
+  const isCancelScheduled = activeSubscriptions[0]?.cancelAtPeriodEnd;
+
 
   return (
     <div className="max-w-2xl mx-auto p-10 space-y-10">
@@ -60,13 +65,32 @@ export default async function MySubscriptionsPage() {
       </section>
 
       <hr className="border-gray-100" />
-
-      <section>
+            <section>
         <h2 className="text-xl font-bold mb-4">Otkazivanje pretplata:</h2>
+
         <SubscriptionButtons 
-        activeSubId ={latestSubId}
-        currentPlan={latestSubPlan}
-        status={activeSubscriptions[0]?.status}/>
+          activeSubId={latestSubId}
+          currentPlan={latestSubPlan}
+          status={activeSubscriptions[0]?.status}
+          cancelAtPeriodEnd={isCancelScheduled}
+          endDate={endDate as Date}
+        />
+
+        {/* 🔥 CANCEL STATUS INFO (NEW) */}
+        {isCancelScheduled && (
+          <div className="mt-4 p-4 rounded-xl border border-orange-200 bg-orange-50">
+            {/* <p className="text-xs font-bold uppercase text-orange-700">
+              Otkazivanje je zakazano
+            </p> */}
+
+            <p className="text-sm font-semibold text-gray-800 mt-1">
+              Završava:{" "}
+              {endDate
+                ? new Date(endDate).toLocaleDateString("hr-HR")
+                : "Nepoznato"}
+            </p>
+          </div>
+        )}
       </section>
         {/*INVOICES*/}
             <hr className="border-gray-100" />
