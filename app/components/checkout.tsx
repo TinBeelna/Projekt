@@ -39,22 +39,57 @@ function PaymentForm() {
           break;
 
          case "requires_action":
-          setMessage("Ponovno pokrećem provjeru banke..."); //porukica dok se otvara
-          setIsLoading(true); //blokira se gumb paynow (otvoren proces u pozadini)
+            setMessage("Autorizacija banke u tijeku...");
+            setIsLoading(true);
 
-          // PONOVNO OTVARANJE 3DS PROZORA
-          stripe.handleNextAction({
-          clientSecret: secretFromUrl, //otvara se prozor 3DSa prema urlu
-          }).then(({ error, paymentIntent }) => { //kada se zavrsi s prozorom
-          if (error) { //hendlanje errora
-          setMessage(error.message ?? "Autentifikacija nije uspjela.");
-          setIsLoading(false);
-           } else if (paymentIntent?.status === "succeeded") { //ako uspije ide se na success
-           // Ako uspije nakon modala, šalji na success
-            window.location.href = `/user/success?payment_intent=${paymentIntent.id}`;
-           }
-          });
-           break;
+            stripe.handleNextAction({
+              clientSecret: secretFromUrl,
+            }).then(async ({ error }) => {
+
+              // ako dobijemo auth error 
+              if (error) {
+                setMessage(error.message ?? "Autentifikacija nije uspjela.");
+                setIsLoading(false);
+                return;
+              }
+
+              // uzima se paymentintent
+              const { paymentIntent } = await stripe.retrievePaymentIntent(secretFromUrl);
+
+              if (!paymentIntent) {
+                setMessage("PaymentIntent nije pronađen.");
+                setIsLoading(false);
+                return;
+              }
+
+              // ako se procesuira ili je vec uspjelo ide se na success page
+              if (
+                paymentIntent.status === "succeeded" ||
+                paymentIntent.status === "processing"
+              ) {
+                window.location.replace(
+                  `/user/success?payment_intent=${paymentIntent.id}`
+                );
+                return;
+              }
+
+              if (paymentIntent.status === "requires_payment_method") {
+                setMessage("Plaćanje nije uspjelo. Pokušaj drugu karticu.");
+                setIsLoading(false);
+                return;
+              }
+
+              // fallback (ai preporuka)
+              setMessage("Plaćanje je u obradi. Stranica će se ažurirati automatski.");
+              setIsLoading(false);
+
+              // safety redirect
+              window.location.replace(
+                `/user/success?payment_intent=${paymentIntent.id}&status=processing`
+              );
+            });
+
+            break;
 
         default:
           setMessage("Nešto je pošlo po krivu.");
