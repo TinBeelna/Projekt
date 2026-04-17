@@ -127,7 +127,7 @@ export default async function AdminRefundsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{refund.email}</td>
                     <td className="px-6 py-4 text-sm font-black text-green-700">
-                      {(refund.amount / 100).toFixed(2)} EUR
+                      {(refund.amount / 100).toFixed(2)} {refund.currency}
                     </td>
                     <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">
                       {refund.stripePaymentId}

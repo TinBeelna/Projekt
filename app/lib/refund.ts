@@ -53,6 +53,7 @@ export async function RefundAction(stripeId: string, amount: number, currency: s
                     email: currentRecord.email,
                     firstName: currentRecord.firstName,
                     lastName: currentRecord.lastName,
+                    currency: currency,
                 }
             });
 
