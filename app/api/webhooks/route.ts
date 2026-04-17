@@ -57,6 +57,9 @@ export async function POST(request: Request) {
 
         try {
             switch (event.type) {
+                case 'payment_intent.canceled': { //ovo dodati!!!!
+
+                break;}
                 case 'payment_intent.succeeded': {//update status uz provjeru ovdje!
                     try {
                         console.log('Payment intent uspio!');
@@ -64,12 +67,28 @@ export async function POST(request: Request) {
                         const orderId = Number (intent.metadata?.orderId);
                         const invoiceId = intent.metadata?.invoiceId;
 
-                        if(orderId && invoiceId) {
+                        if (!orderId || !invoiceId) {
+                        console.log("IDs nisu dosli iz metadata!!: ", intent.metadata);
+                        break;
+                        }
+
+                        const existing = await prisma.paymentIntents.findUnique({
+                            where: { id: orderId },
+                            });
+
+                        if (!existing) break;
+                        
+                        if (existing.status === "Partially captured") {
+                            console.log("Skipping webhook overwrite - already partial captured");
+                            break;
+                            }
+
+                        
                             await prisma.paymentIntents.update({
                                 where: { id: orderId},
                                 data: {
                                     status: "Succeeded",
-                                    amount: intent.amount,
+                                    amount: intent.amount_received ?? intent.amount,
                                     currency: intent.currency,
                                 } 
                             });
@@ -78,11 +97,12 @@ export async function POST(request: Request) {
                                 where: { id: invoiceId},
                                 data: {
                                     status: "Succeeded",
-                                    total: intent.amount,
+                                    total: intent.amount_received ?? intent.amount,
                                 } 
                             });
+                            console.log("USPJESAN DB APDEJT ZA SUCCESS PLACANJA");
                         }
-                    } catch (err) {
+                     catch (err) {
                         console.error('Error u payment_intent.succeeded: ',err);
                     }
                     break; }

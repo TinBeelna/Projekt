@@ -3,18 +3,19 @@ import { stripe } from "@/app/lib/stripe";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function capturePayment(paymentIntentId: string, amount?: number) {
+export async function capturePayment(paymentIntentId: string, amount: number, fullAmount: number) {
   try {
     const params: any = {};
-    if (amount) {
-      params.amount_to_capture = amount; 
-    }
+    const amountToCapture = Math.round(amount);
+    params.amount_to_capture = amountToCapture;
+    const fullAmountRounded = Math.round(fullAmount);
 
     const intent = await stripe.paymentIntents.capture(paymentIntentId, params);
     const ourOrderId = intent.metadata.orderId;
 
     // za update baze (partial ili ne)
-    const isPartial = amount && amount < intent.amount;
+    //const isPartial = amount && amount < intent.amount;
+    const isPartial = amount < fullAmountRounded;
     
     await prisma.paymentIntents.update({
       where: { id: Number(ourOrderId)}, 

@@ -41,7 +41,8 @@ export default async function PaymentsPage() {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Datum i vrijeme</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Proizvod</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Iznos</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Iznos (ukupno)</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Iznos (plaćen)</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
               </tr>
             </thead>
@@ -68,6 +69,10 @@ export default async function PaymentsPage() {
                   <td className="px-6 py-4 text-gray-700">
                     {/* Stripe iznos dijeliš sa 100 za eure */}
                     {payment.amount ? (payment.amount / 100).toFixed(2) : "0.00"} {payment.currency}
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">
+                    {/* Stripe iznos dijeliš sa 100 za eure */}
+                    {payment.capturedAmount ? (payment.capturedAmount / 100).toFixed(2) : "0.00"} {payment.currency}
                   </td>
                   <td className="px-6 py-4">
   {(() => {
