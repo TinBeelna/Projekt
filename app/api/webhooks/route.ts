@@ -64,12 +64,16 @@ export async function POST(request: Request) {
                         const orderId = Number (intent.metadata?.orderId);
                         const invoiceId = intent.metadata?.invoiceId;
 
-                        if(orderId && invoiceId) {
+                        if (!orderId || !invoiceId) {
+                        console.log("IDs nisu dosli iz metadata!!: ", intent.metadata);
+                        break;
+                        }
+                        
                             await prisma.paymentIntents.update({
                                 where: { id: orderId},
                                 data: {
                                     status: "Succeeded",
-                                    amount: intent.amount,
+                                    amount: intent.amount_received ?? intent.amount,
                                     currency: intent.currency,
                                 } 
                             });
@@ -78,11 +82,12 @@ export async function POST(request: Request) {
                                 where: { id: invoiceId},
                                 data: {
                                     status: "Succeeded",
-                                    total: intent.amount,
+                                    total: intent.amount_received ?? intent.amount,
                                 } 
                             });
+                            console.log("USPJESAN DB APDEJT ZA SUCCESS PLACANJA");
                         }
-                    } catch (err) {
+                     catch (err) {
                         console.error('Error u payment_intent.succeeded: ',err);
                     }
                     break; }

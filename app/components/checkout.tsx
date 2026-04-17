@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   PaymentElement,
   useStripe,
@@ -16,52 +16,62 @@ function PaymentForm() {
   const elements = useElements();
 
   //RECOVERY FLOW useffect fja
-  React.useEffect(() => { 
 
-    if(!stripe) return; //je li stripe sdk budan
-    const secretFromUrl = new URLSearchParams(window.location.search)
-      .get("payment_intent_client_secret"); //citaj tajni kljuc iz urla
+  const hasRun = useRef(false);
 
-    if (!secretFromUrl) return;
-    //switch da se vidi sto se tocno dogodilo u checkoutu; 
-    stripe.retrievePaymentIntent(secretFromUrl).then(({ paymentIntent }) => {
-      switch (paymentIntent?.status) {
-        case "succeeded":
-          window.location.href = `/user/success?payment_intent=${paymentIntent.id}`; //success stranica sa uspjehom 
-          break;
-        case "processing":
-          window.location.href = `/user/success?payment_intent=${paymentIntent.id}`; //success stranica sa failom
-          break;
-        case "requires_payment_method":
-          if (paymentIntent.last_payment_error) {
-            setMessage("Payment didn't succeed during reload."); 
+  React.useEffect(() => {
+  if (!stripe || hasRun.current) return;
+  hasRun.current = true;
+
+  const search = window.location.search;
+
+  const params = new URLSearchParams(window.location.search);
+
+  const clientSecret = params.get("payment_intent_client_secret");
+  if (!clientSecret) return;
+
+  stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
+    if (!paymentIntent) return;
+
+    if (paymentIntent.status === "requires_payment_method" && !window.location.search.includes("payment_intent")) {
+      return;
+    } //fix for kartica odbijena issue
+    console.log("RECOVERY STATUS:", paymentIntent.status);
+    switch (paymentIntent.status) {
+      case "succeeded":
+        window.history.replaceState({}, '', window.location.pathname);
+        window.location.href = `/user/success?payment_intent=${paymentIntent.id}`;
+        break;
+
+      case "processing":
+        setMessage("Plaćanje se obrađuje...");
+
+        setTimeout(() => {
+          window.location.href = `/user/success?payment_intent=${paymentIntent.id}`;
+        }, 2000);
+        break;
+
+      case "requires_action":
+        setMessage("Potrebna autentifikacija...");
+
+        stripe.handleNextAction({ clientSecret }).then(({ error, paymentIntent }) => {
+          if (error) {
+            setMessage(error.message ?? "Greška");
+            return;
           }
-          break;
 
-         case "requires_action":
-          setMessage("Ponovno pokrećem provjeru banke..."); //porukica dok se otvara
-          setIsLoading(true); //blokira se gumb paynow (otvoren proces u pozadini)
-
-          // PONOVNO OTVARANJE 3DS PROZORA
-          stripe.handleNextAction({
-          clientSecret: secretFromUrl, //otvara se prozor 3DSa prema urlu
-          }).then(({ error, paymentIntent }) => { //kada se zavrsi s prozorom
-          if (error) { //hendlanje errora
-          setMessage(error.message ?? "Autentifikacija nije uspjela.");
-          setIsLoading(false);
-           } else if (paymentIntent?.status === "succeeded") { //ako uspije ide se na success
-           // Ako uspije nakon modala, šalji na success
+          if (paymentIntent?.status === "succeeded") {
             window.location.href = `/user/success?payment_intent=${paymentIntent.id}`;
-           }
-          });
-           break;
+          }
+        });
+        break;
 
-        default:
-          setMessage("Nešto je pošlo po krivu.");
-          break;
-      }
-    });
-  }, [stripe]);
+      case "requires_payment_method":
+        setMessage("Kartica nije prošla. Pokušajte ponovno.");
+        break;
+    }
+  });
+}, [stripe]);
 
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);

@@ -3,7 +3,9 @@
 
 import React, { useState, useEffect } from "react";
 import CheckoutForm from "../../components/checkout";
+import { loadStripe } from "@stripe/stripe-js";
 
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
 export default function BuyPayPage() {
 
@@ -11,6 +13,7 @@ export default function BuyPayPage() {
 const [odabraniItem, setItem] = useState<string | null>(null);
 const [clientSecret, setClientSecret] = useState<string>("");
 const [FXcurrency, setCurrency] = useState('eur'); //dodano za fx; eur kao standardna
+const [hasDefaultCard, setHasDefaultCard] = useState<boolean | null>(null); //za default card placanje
 const [rates, setRates] = useState<{ [key: string]: number}>({eur: 1, usd: 1.08, gbp: 0.85}); //default fallback fx
 const currencySymbols = {
     usd: '$',
@@ -42,9 +45,9 @@ React.useEffect(() => { //ZA RECOVERY
   const urlParams = new URLSearchParams(window.location.search);
   const secretFromUrl = urlParams.get("payment_intent_client_secret"); //pamti url i nakon refresha
 
-  if (secretFromUrl) { //ako nema secreta korisnik je tek dosao
-    setClientSecret(secretFromUrl); //ponovno checkoutform ako je refresh!
-  }
+  // if (secretFromUrl) { //ako nema secreta korisnik je tek dosao
+  //   setClientSecret(secretFromUrl); //ponovno checkoutform ako je refresh!
+  // }
 }, []); // "cim se stranica upali"
 
 const displayPrice = (amountEurCents: number) => {
@@ -55,17 +58,21 @@ const displayPrice = (amountEurCents: number) => {
   return `${currencySymbols[FXcurrency as keyof typeof currencySymbols]}${converted.toFixed(2)}`;
 };
 
-const convertPrice = (amountEurCents: number) => {
-  const rate = rates[FXcurrency] || 1;
-  const converted = (amountEurCents / 100) * rate;
-  const rounded = Math.round(converted * 100)
+// const convertPrice = (amountEurCents: number) => {
+//   const rate = rates[FXcurrency] || 1;
+//   const converted = (amountEurCents / 100) * rate;
+//   const rounded = Math.round(converted * 100)
   
-  // formatiranje u 2-decimalni broj sa znakom valute
-  return rounded;
-};
+//   // formatiranje u 2-decimalni broj sa znakom valute
+//   return rounded;
+// };
 
 
-const initiatePayment = async (item: string, amount: number, currency: string) => {
+const initiatePayment = async (
+  item: string,
+  amountEurCents: number,
+  currency: string
+) => {
   setItem(item); 
 
   // Poziv backend API-ja za kreiranje Payment Intenta
@@ -75,16 +82,31 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ 
-      amount: amount, //amount (u euru)
+      amountEurCents: amountEurCents, //amount (u euru)
       itemName: item,
-      currency: FXcurrency, //dodana valuta
+      currency: currency, //dodana valuta
     }), // salje se iznos za naplatu i ime proizvoda!
   });
-  const { clientSecret } = await response.json();
+  const { clientSecret, hasDefaultCard } = await response.json(); //dodan default card check da vidim jel' je ima
   setClientSecret(clientSecret);
+  setHasDefaultCard(hasDefaultCard);
+
+  if (hasDefaultCard) {
+    const stripe = await stripePromise;
+
+    if (!stripe) return;
+
+    const { paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
+
+    if (paymentIntent?.status === "succeeded") {
+      window.location.href = `/user/success?payment_intent=${paymentIntent.id}`;
+    } else if (paymentIntent?.status === "requires_action") {
+      await stripe.handleNextAction({clientSecret})
+    }
+  }
 
   //URL UPDATE 
-  const newUrl = `${window.location.pathname}?payment_intent_client_secret=${clientSecret}`;
+  const newUrl = `${window.location.pathname}?payment_intent_client_secret=${clientSecret}&redirect=1`;
   window.history.pushState({}, '', newUrl);
 
 }
@@ -118,21 +140,23 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
 
          {/* gumbovi */}
         <button 
-          onClick={() => initiatePayment("Novine", convertPrice(200), FXcurrency)} 
+          onClick={() => initiatePayment("Novine", 200, FXcurrency)} 
           className="bg-blue-600 text-white"
         >
           Kupi novine (Cijena: {displayPrice(200)})
         </button>
 
       <button 
-          onClick={() => initiatePayment("Knjiga", convertPrice(500), FXcurrency)}
+          onClick={() => initiatePayment("Knjiga", 500, FXcurrency)}
           className="bg-blue-600 text-white"
         >
           Kupi knjigu (Cijena: {displayPrice(500)})
         </button>
 
         {/*checkoutform kada initiate payment dobije tajni kljuc (na dodir gumba) */}
-        {clientSecret && <CheckoutForm clientSecret={clientSecret} />} 
+        {clientSecret && hasDefaultCard === false && (
+          <CheckoutForm clientSecret={clientSecret} />
+        )}
       </div>
     </div>
   );

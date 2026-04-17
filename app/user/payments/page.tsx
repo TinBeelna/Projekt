@@ -23,6 +23,8 @@ export default async function PaymentsPage() {
     },
   });
 
+  //console.log(userPayments[0]);
+
   return (
     <div className="max-w-5xl mx-auto p-8">
       <div className="mb-8">
