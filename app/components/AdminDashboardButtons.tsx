@@ -13,7 +13,8 @@ export default function CaptureButtons({ paymentIntentId, fullAmount }: { paymen
 
     let res;
     if (type === 'full') res = await capturePayment(paymentIntentId);
-    if (type === 'partial') res = await capturePayment(paymentIntentId, fullAmount / 5); 
+    //if (type === 'partial') res = await capturePayment(paymentIntentId, fullAmount / 5); 
+    if (type === 'partial') res = await capturePayment(paymentIntentId, Math.round((fullAmount / 5) * 100) / 100); //rounding u slucaju drugih valuta
     if (type === 'cancel') res = await cancelPayment(paymentIntentId);
 
     if (!res?.success) alert("Greška: " + res?.error);
