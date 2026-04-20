@@ -17,12 +17,19 @@ export async function POST(req: Request) {
     }
 
     const user = await prisma.user.findUnique({ //user po mailu iz cookies
-      where: {email: email}
+      where: {email: email},
+      include: { //dodatak ima li default card
+        cards: {
+          where: {isDefault: true},
+        }
+      }
     });
 
     if(!user) {
       return NextResponse.json( { message: "Korisnik ne postoji"}, { status: 404});
     }
+
+    const defaultCard = user?.cards[0];
 
     const newOrder = await prisma.paymentIntents.create({
       data: {
@@ -33,7 +40,8 @@ export async function POST(req: Request) {
         lastName: user.lastName,
         status: "PENDING",
         items: itemName,
-        amount: amount
+        amount: amount,
+        currency: currency,
       }
     });
 
@@ -47,30 +55,28 @@ export async function POST(req: Request) {
       }
     });
 
+    if (defaultCard) { //flow ako ima default karticu
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: currency,
+        customer: user.stripeId ?? undefined,
+        payment_method: defaultCard.paymentMethodId,
+       confirmation_method: 'automatic',
+        confirm: true,
+        return_url: "http://localhost:3000/user/success",
 
-    //last update: dodan metadata user/order id (oba su samo inkrementi)
-    const paymentIntent = await stripe.paymentIntents.create({
+        metadata: {
+          orderId: newOrder.id.toString(),
+          invoiceId: newOrderInvoice.id.toString(),
+        },
+        capture_method: "manual",
+      });
+      console.log("Info o placanju:", { //za provjeru
       amount: amount,
-      currency: currency as string,
-      payment_method_options: {
-        card: {
-          request_three_d_secure: 'any',
-        }
-      },
-    //automatic_payment_methods: { enabled: true },
-    payment_method_types: ['card'],
-      metadata: {
-        orderId: newOrder.id.toString(),
-        userId: user.id.toString(),
-        productName: itemName,
-        invoiceId: newOrderInvoice.id, //dodano za rjesavanje errora kod invoice izrade!
-    },
-    capture_method: "manual",
-  },
-  {
-    idempotencyKey: crypto.randomUUID(), //idempotency!!!
-  }
-);
+      currency: currency,
+      isDefault: true,
+    });
+
     await prisma.paymentIntents.update({ //dodaj stripe ID za manual capture!
       where: {id: newOrder.id},
       data: {
@@ -78,8 +84,76 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ clientSecret: paymentIntent.client_secret });
+    return NextResponse.json({ clientSecret: paymentIntent.client_secret, hasDefaultCard: true});
+
+    } else { //normalan flow ako nema automatskog placanja
+      const paymentIntent = await stripe.paymentIntents.create({
+          amount: amount,
+          currency: currency,
+          customer: user.stripeId ?? undefined,
+          payment_method_options: {
+            card: {
+              request_three_d_secure: 'any',
+            }
+          },
+        payment_method_types: ['card'],
+          metadata: {
+            orderId: newOrder.id.toString(),
+            userId: user.id.toString(),
+            productName: itemName,
+            invoiceId: newOrderInvoice.id, //dodano za rjesavanje errora kod invoice izrade!
+            return_url: "http://localhost:3000/user/success",
+        },
+        capture_method: "manual",
+      },
+      {
+        idempotencyKey: crypto.randomUUID(), //idempotency!!!
+      }
+    );
+
+    await prisma.paymentIntents.update({ //dodaj stripe ID za manual capture!
+      where: {id: newOrder.id},
+      data: {
+        stripeId: paymentIntent.id
+      },
+    });
+
+    return NextResponse.json({ clientSecret: paymentIntent.client_secret, hasDefaultCard: false});
+
+    }
+    
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount: amount,
+//       currency: currency as string,
+//       payment_method_options: {
+//         card: {
+//           request_three_d_secure: 'any',
+//         }
+//       },
+//     //automatic_payment_methods: { enabled: true },
+//     payment_method_types: ['card'],
+//       metadata: {
+//         orderId: newOrder.id.toString(),
+//         userId: user.id.toString(),
+//         productName: itemName,
+//         invoiceId: newOrderInvoice.id, //dodano za rjesavanje errora kod invoice izrade!
+//     },
+//     capture_method: "manual",
+//   },
+//   {
+//     idempotencyKey: crypto.randomUUID(), //idempotency!!!
+//   }
+// );
+    // await prisma.paymentIntents.update({ //dodaj stripe ID za manual capture!
+    //   where: {id: newOrder.id},
+    //   data: {
+    //     stripeId: paymentIntent.id
+    //   },
+    // });
+
+    //return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (error: any) {
+    console.error("Error u izradi payment intenta:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

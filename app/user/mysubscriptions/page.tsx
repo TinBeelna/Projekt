@@ -145,15 +145,10 @@ export default async function MySubscriptionsPage() {
                 </div>
               </div>
             </div>
-
             ))}
           </div>
         )}
       </section>
-
-
-    </div>
-
-    
+    </div> 
   );
 }

@@ -46,7 +46,7 @@ export function UserNavbar() {
       Dashboard
     </Link>
     <Link href="/user/buypay" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    📦 Buypay
+     📦 Buypay 
     </Link>
     <Link href="/user/payments" className="p-3 hover:bg-slate-800 rounded transition font-medium">
     $ Payments

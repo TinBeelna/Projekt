@@ -1,3 +1,3 @@
 export default function UserDashboardPage() {
-  return <h1>user dashboard page</h1>;
+  return <h1>Dobrodošli na stranicu :) </h1>;
 }
