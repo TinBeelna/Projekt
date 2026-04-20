@@ -16,6 +16,7 @@ function PaymentForm() {
   const elements = useElements();
 
   //RECOVERY FLOW useffect fja
+  //ko default card placanja 3ds flow se vrsi preko stripe stranice, tako da reload ne cini razliku; recovery isto kao i za manual!
   React.useEffect(() => { 
 
     if(!stripe) return; //je li stripe sdk budan
