@@ -66,6 +66,8 @@ export async function POST(request: Request) {
                         const intent = event.data.object as Stripe.PaymentIntent; //sigurnije nego intent succeeded
                         const orderId = Number (intent.metadata?.orderId);
                         const invoiceId = intent.metadata?.invoiceId;
+                        //const isPartial = intent.amount_received < intent.amount; //partial provjera
+                    
 
                         if (!orderId || !invoiceId) {
                         console.log("IDs nisu dosli iz metadata!!: ", intent.metadata);
@@ -78,15 +80,15 @@ export async function POST(request: Request) {
 
                         if (!existing) break;
                         
-                        if (existing.status === "Partially captured") {
-                            console.log("Vec je partially captured -> skip prepisa u db.");
-                            break;
-                            }
+                        // if (existing.status === "Partially captured") {
+                        //     console.log("Vec je partially captured -> skip prepisa u db.");
+                        //     break;
+                        //     }
 
-                        
                             await prisma.paymentIntents.update({
                                 where: { id: orderId},
                                 data: {
+                                    //status: isPartial ? "Capture_required": "Succeeded",
                                     status: "Succeeded",
                                     amount: intent.amount_received ?? intent.amount,
                                     currency: intent.currency,
@@ -97,6 +99,7 @@ export async function POST(request: Request) {
                             await prisma.invoice.update({
                                 where: { id: invoiceId},
                                 data: {
+                                    //status: isPartial ? "Captured_partially": "Succeeded",
                                     status: "Succeeded",
                                     total: intent.amount_received ?? intent.amount,
                                 } 

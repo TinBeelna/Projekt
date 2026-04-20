@@ -130,7 +130,7 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
 
     return (
     <div id="checkout" className="mx-auto max-w-md p-8">
-      <h1 className="text-2xl font-bold mb-5"> Klikni na ono sto zelis kupiti</h1>
+      <h1 className="text-2xl font-bold mb-5"> Klikni na ono sto zelis kupiti: novine (automatski) ili knjigu (ceka se na manual capture admina) </h1>
       <div className="space-y-4">
 
         {/* FX: Gumbovi za biranje valute */}

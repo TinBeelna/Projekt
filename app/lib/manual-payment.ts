@@ -10,12 +10,14 @@ export async function capturePayment(paymentIntentId: string, amount: number, fu
     params.amount_to_capture = amountToCapture;
     const fullAmountRounded = Math.round(fullAmount);
 
-    const intent = await stripe.paymentIntents.capture(paymentIntentId, params);
+    const isPartial = amount < fullAmountRounded;
+    params.final_capture = isPartial ? "false": "true"; //nije final capture ako je partial
+
+    const intent = await stripe.paymentIntents.capture(paymentIntentId, params,);
     const ourOrderId = intent.metadata.orderId;
 
     // za update baze (partial ili ne)
     //const isPartial = amount && amount < intent.amount;
-    const isPartial = amount < fullAmountRounded;
     
     await prisma.paymentIntents.update({
       where: { id: Number(ourOrderId)}, 

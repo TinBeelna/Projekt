@@ -61,6 +61,12 @@ export async function POST(req: Request) {
         currency: currency,
         customer: user.stripeId ?? undefined,
         payment_method: defaultCard.paymentMethodId,
+        payment_method_options: {
+            card: {
+              request_three_d_secure: 'any',
+              //request_multicapture: 'if_available',
+            }
+          },
         confirmation_method: 'automatic',
         confirm: true,
         return_url: "http://localhost:3000/user/success",
@@ -95,6 +101,7 @@ export async function POST(req: Request) {
           payment_method_options: {
             card: {
               request_three_d_secure: 'any',
+              //request_multicapture: 'if_available',
             }
           },
         payment_method_types: ['card'],
@@ -106,7 +113,7 @@ export async function POST(req: Request) {
             return_url: "http://localhost:3000/user/success",
         },
         //capture_method: "manual",
-        capture_method: newOrder.items === "Novine" ? "automatic": "manual", //u slucaju da se kupuju novine automatski se naplacuje
+        capture_method: (newOrder.items === "Novine" ? "automatic": "manual"), //u slucaju da se kupuju novine automatski se naplacuje
       },
       {
         idempotencyKey: crypto.randomUUID(), //idempotency!!!
