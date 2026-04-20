@@ -61,7 +61,7 @@ export async function POST(req: Request) {
         currency: currency,
         customer: user.stripeId ?? undefined,
         payment_method: defaultCard.paymentMethodId,
-       confirmation_method: 'automatic',
+        confirmation_method: 'automatic',
         confirm: true,
         return_url: "http://localhost:3000/user/success",
 
@@ -69,7 +69,8 @@ export async function POST(req: Request) {
           orderId: newOrder.id.toString(),
           invoiceId: newOrderInvoice.id.toString(),
         },
-        capture_method: "manual",
+        capture_method: newOrder.items === "Novine" ? "automatic": "manual", //u slucaju da se kupuju novine automatski se naplacuje
+
       });
       console.log("Info o placanju:", { //za provjeru
       amount: amount,
@@ -104,7 +105,8 @@ export async function POST(req: Request) {
             invoiceId: newOrderInvoice.id, //dodano za rjesavanje errora kod invoice izrade!
             return_url: "http://localhost:3000/user/success",
         },
-        capture_method: "manual",
+        //capture_method: "manual",
+        capture_method: newOrder.items === "Novine" ? "automatic": "manual", //u slucaju da se kupuju novine automatski se naplacuje
       },
       {
         idempotencyKey: crypto.randomUUID(), //idempotency!!!
@@ -121,35 +123,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ clientSecret: paymentIntent.client_secret, hasDefaultCard: false});
 
     }
-    
-//     const paymentIntent = await stripe.paymentIntents.create({
-//       amount: amount,
-//       currency: currency as string,
-//       payment_method_options: {
-//         card: {
-//           request_three_d_secure: 'any',
-//         }
-//       },
-//     //automatic_payment_methods: { enabled: true },
-//     payment_method_types: ['card'],
-//       metadata: {
-//         orderId: newOrder.id.toString(),
-//         userId: user.id.toString(),
-//         productName: itemName,
-//         invoiceId: newOrderInvoice.id, //dodano za rjesavanje errora kod invoice izrade!
-//     },
-//     capture_method: "manual",
-//   },
-//   {
-//     idempotencyKey: crypto.randomUUID(), //idempotency!!!
-//   }
-// );
-    // await prisma.paymentIntents.update({ //dodaj stripe ID za manual capture!
-    //   where: {id: newOrder.id},
-    //   data: {
-    //     stripeId: paymentIntent.id
-    //   },
-    // });
+
 
     //return NextResponse.json({ clientSecret: paymentIntent.client_secret });
   } catch (error: any) {

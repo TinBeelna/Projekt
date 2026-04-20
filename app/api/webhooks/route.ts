@@ -79,7 +79,7 @@ export async function POST(request: Request) {
                         if (!existing) break;
                         
                         if (existing.status === "Partially captured") {
-                            console.log("Skipping webhook overwrite - already partial captured");
+                            console.log("Vec je partially captured -> skip prepisa u db.");
                             break;
                             }
 
@@ -90,6 +90,7 @@ export async function POST(request: Request) {
                                     status: "Succeeded",
                                     amount: intent.amount_received ?? intent.amount,
                                     currency: intent.currency,
+                                    capturedAmount: intent.amount_received ?? intent.amount, //dodan captured_amount za provjeru!
                                 } 
                             });
 
