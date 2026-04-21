@@ -84,7 +84,7 @@ export async function registerUser(formData: FormData) {
         await signIn("credentials", {
             email,
             password,
-            redirectTo: "/user/user-dashboard," //middleware provjerava ulogu
+            redirectTo: "/user/user-dashboard" //middleware provjerava ulogu
         });
     } catch (err) {
         if (err instanceof AuthError) {
