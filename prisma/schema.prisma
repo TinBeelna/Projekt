@@ -6,6 +6,7 @@ datasource db {
 //klijent 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 //template za korisnika

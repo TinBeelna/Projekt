@@ -4,6 +4,7 @@ import { prisma } from '@/app/lib/prisma'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { stripe } from "@/app/lib/stripe";
+import bcrypt from 'bcrypt';
 
 
 
@@ -16,7 +17,9 @@ export async function loginUser(formData: FormData) {
         where: { email }
     })
 
-    if (!user || user.password !== password) {
+    const isPasswordOk = user ? await bcrypt.compare(password, user.password) : false;
+
+    if (!user || !isPasswordOk) {
         // ako nema korisnika ili password ne odgovara, vrati error
         return { error: 'Invalid email or password' };
     }
@@ -57,9 +60,12 @@ export async function registerUser(formData: FormData) {
     if (existingUser) {
         return { error: 'Email already in use' };
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10); //hash passworda: 10 salt rundi
+
     const newUser = await prisma.user.create({
         data: {
-            email: email, password: password, firstName: firstName, lastName: lastName, role: 'USER' // svi koji se registriraju su USER, samo admini su ADMIN
+            email: email, password: hashedPassword, firstName: firstName, lastName: lastName, role: 'USER' // svi koji se registriraju su USER, samo admini su ADMIN
         }
     })
     //Stripe create customer
@@ -72,7 +78,7 @@ export async function registerUser(formData: FormData) {
         }, 
          description: 'User registered on website',
         }, {
-  idempotencyKey: `user-${newUser.id}-creation`, // protiv duplih izrada
+  idempotencyKey: crypto.randomUUID(), // protiv duplih izrada
     });
 
     await prisma.user.update({ //dodatak stripeID na usera
