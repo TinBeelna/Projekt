@@ -71,3 +71,22 @@ export function UserNavbar() {
 </aside>
 );
 }
+
+export function RefundAdminNavbar() {
+    return (
+    <aside className="w-80 bg-slate-900 text-white min-h-screen p-6 flex flex-col shadow-xl">
+        <nav className="flex flex-col gap-12 flex-1">
+            <Link href="/refundAdmin/refunds" className="p-3 hover:bg-slate-800 rounded transition font-medium">
+            🔄 Refunds
+            </Link>
+        </nav>
+        <div className="mt-auto">
+            <form action={logoutUser}>
+                <button type = "submit" className="mt-6 bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition">
+                    Logout
+                </button>
+            </form>
+        </div>
+        </aside>
+);
+}

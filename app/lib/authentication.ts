@@ -19,3 +19,19 @@ export async function isAdmin() {
     }
     return user; //ako je sve ok vrati usera
 }
+
+export async function isRefundAdmin() {
+    const session = await auth();
+    const email = session?.user?.email;
+
+    if(!email) return null; //ako nema emaila u auth, vrati null
+
+    const user = await prisma.user.findUnique({
+        where: { email }
+    })
+
+    if(!user || user.role !== 'REFUNDADMIN') {
+        notFound(); //error 404 custom stranica
+    }
+    return user; //ako je sve ok vrati usera
+}

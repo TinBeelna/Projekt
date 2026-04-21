@@ -2,7 +2,12 @@ import { prisma } from "@/app/lib/prisma";
 
 export default async function UsersPage() {
 
-  const users = await prisma.user.findMany({
+  const users = await prisma.user.findMany({ 
+    where: {
+      role: {
+        in: ["USER", "REFUNDADMIN"]
+      },
+    },
     orderBy: {
       id: "asc"
     }

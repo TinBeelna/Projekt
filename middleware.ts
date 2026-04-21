@@ -8,6 +8,7 @@ export default auth((request) => { //promjena iz cookies u auth!
     const { nextUrl } = request;
     const isPublicPage = pathname === '/' || pathname === '/register';
     const isAdminPage = pathname.startsWith('/admin'); //admin ruta
+    const isRefundAdminPage = pathname.startsWith('/refundAdmin');
 
       // Dopusti Auth.js rute da prođu bez provjere
     if (nextUrl.pathname.startsWith('/api/auth')) {
@@ -28,9 +29,20 @@ export default auth((request) => { //promjena iz cookies u auth!
         return NextResponse.redirect(new URL('/not-found', request.url));
     }
 
+    if (isRefundAdminPage && userRole !== 'REFUNDADMIN') {
+        //return NextResponse.next();
+        return NextResponse.redirect(new URL('/not-found', request.url));
+    }
+
     // logirana osoba ne treba opet na login -> admin na admin dashboard a user na user dashboard
     if (isLoggedIn && isPublicPage) {
-        const target = userRole === 'ADMIN' ? '/admin/admin-dashboard' : '/user/user-dashboard';
+        let target = '/user/user-dashboard';
+
+        if (userRole === 'ADMIN') {
+            target = '/admin/admin-dashboard'
+        } else if (userRole === 'REFUNDADMIN') {
+            target = '/refundAdmin/refunds' //ide se samo na refund stranicu (nema potrebe za dashboardom)
+        }
         return NextResponse.redirect(new URL(target, request.url));
     }
 
