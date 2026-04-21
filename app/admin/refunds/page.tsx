@@ -115,6 +115,7 @@ export default async function AdminRefundsPage() {
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">Kupac</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">Email</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase text-green-600">Vraćeno</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">Vrijeme:</th>
                   <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">Stripe ID</th>
                 </tr>
               </thead>
@@ -131,6 +132,11 @@ export default async function AdminRefundsPage() {
                     </td>
                     <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">
                       {refund.stripePaymentId}
+                    </td>
+                    <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">
+                      {refund.createdAt
+                      ? new Date(refund.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short'})
+                      : 'N/A'}
                     </td>
                   </tr>
                 ))}

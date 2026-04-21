@@ -112,13 +112,14 @@ model Invoice {
 
 
 model refunds{
-  id              Int      @id @default(autoincrement()) @unique
+  id              Int       @id @default(autoincrement()) @unique
   stripePaymentId String   
-  amount          Int      @default(0)
+  amount          Int       @default(0)
   email           String
   firstName       String? 
   lastName        String?
-  currency        String   @default("eur")
+  currency        String    @default("eur")
+  createdAt       DateTime? @default(now())   // audit trail
 }
 
 model charges{
