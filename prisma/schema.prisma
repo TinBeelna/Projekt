@@ -29,10 +29,10 @@ model Customer {
 }
 
 model paymentIntents { 
-  id              Int          @id @default(autoincrement()) // Id je inkrementirani broj
-  email           String  
-  userId          Int
-  role            String        @default("USER")             // Role: "USER" ili "ADMIN"
+  id              Int        @id @default(autoincrement()) // Id je inkrementirani broj
+  email           String?  
+  userId          Int?
+  role            String?     @default("USER")             // Role: "USER" ili "ADMIN"
   firstName       String? 
   lastName        String?
   status          String?
@@ -40,11 +40,13 @@ model paymentIntents {
   currency        String     @default("eur")   // Valuta
   items           String?                    // Opis što je kupljeno (može i Json tip)
   createdAt       DateTime   @default(now())   // Da znaš kad je plaćeno
-  stripeId        String?  @unique
+  stripeId        String?    @unique
   capturedAmount  Int?                     //za partial capture 
   refundAmount    Int?                    //za refund funkcionalnost!
   charges         charges[]
   disputes        disputes[]
+  isPartial       Boolean?
+  partialPayId    String?                 //za partial capture i pretragu       
 }
 
 model Webhook {

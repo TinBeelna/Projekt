@@ -4,7 +4,14 @@ import CaptureButtons from "@/app/components/AdminDashboardButtons";
 export default async function AdminDashboardPage() {
   const pendingOrders = await prisma.paymentIntents.findMany({
     where: { 
-      status: "Capture_required" 
+      status: "Capture_required",
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const ordersToFinish = await prisma.paymentIntents.findMany({
+    where: { 
+      status: "Final_capture_required",
     },
     orderBy: { createdAt: 'desc' }
   });

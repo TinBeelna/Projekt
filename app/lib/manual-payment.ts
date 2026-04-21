@@ -10,22 +10,25 @@ export async function capturePayment(paymentIntentId: string, amount: number, fu
     params.amount_to_capture = amountToCapture;
     const fullAmountRounded = Math.round(fullAmount);
 
-    const isPartial = amount < fullAmountRounded;
-    params.final_capture = isPartial ? "false": "true"; //nije final capture ako je partial
-
     const intent = await stripe.paymentIntents.capture(paymentIntentId, params,);
     const ourOrderId = intent.metadata.orderId;
 
+     const isPartial = amount && amount < intent.amount;
+    //params.final_capture = isPartial ? "false": "true"; //nije final capture ako je partial
+
     // za update baze (partial ili ne)
     //const isPartial = amount && amount < intent.amount;
-    
-    await prisma.paymentIntents.update({
-      where: { id: Number(ourOrderId)}, 
-      data: { 
-        status: isPartial ? "Partially captured" : "Succeeded",
-        capturedAmount: amount || intent.amount 
-      }
-    });
+    if(isPartial) {
+      console.log("PARTIAL PAYMENT!!!!!!!!!!!!!");
+    }
+    // await prisma.paymentIntents.update({
+    //   where: { id: Number(ourOrderId)}, 
+    //   data: { 
+    //     status: isPartial ? "Partially captured" : "Succeeded",
+    //     capturedAmount: amount || intent.amount, 
+    //     amount: fullAmount,
+    //   }
+    // });
 
     revalidatePath("/admin/dashboard");
     return { success: true };

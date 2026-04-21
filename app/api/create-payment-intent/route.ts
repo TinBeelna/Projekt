@@ -38,6 +38,7 @@ export async function POST(req: Request) {
         role: user.role,
         firstName: user.firstName,
         lastName: user.lastName,
+        //status: "PROCESSING",
         status: "PENDING",
         items: itemName,
         amount: amount,
@@ -49,7 +50,7 @@ export async function POST(req: Request) {
       data: {
         userId: user.id,
         total: amount,
-        status: "PENDING",
+        status: "PROCESSING",
         currency: currency,
         items: itemName,
       }
@@ -123,9 +124,17 @@ export async function POST(req: Request) {
     await prisma.paymentIntents.update({ //dodaj stripe ID za manual capture!
       where: {id: newOrder.id},
       data: {
-        stripeId: paymentIntent.id
+        stripeId: paymentIntent.id,
+        //status: "PENDING",
       },
     });
+
+    // await prisma.invoice.update({ //dodaj stripe ID za manual capture!
+    //   where: {id: newOrderInvoice.id},
+    //   data: {
+    //     status: "PENDING",
+    //   },
+    // });
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret, hasDefaultCard: false});
 

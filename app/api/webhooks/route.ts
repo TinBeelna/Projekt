@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
         try {
             switch (event.type) {
-                case 'payment_intent.canceled': { //ovo dodati!!!!
+                case 'payment_intent.canceled': { //ovo dodati?
 
                 break;}
                 case 'payment_intent.succeeded': {//update status uz provjeru ovdje!
@@ -66,8 +66,8 @@ export async function POST(request: Request) {
                         const intent = event.data.object as Stripe.PaymentIntent; //sigurnije nego intent succeeded
                         const orderId = Number (intent.metadata?.orderId);
                         const invoiceId = intent.metadata?.invoiceId;
-                        //const isPartial = intent.amount_received < intent.amount; //partial provjera
-                    
+                        const isPartial = (intent.amount_received < intent.amount); //&& (intent.amount_capturable > 0); //partial provjera
+                        //const isFullyCaptured = intent.amount_received === intent.amount;
 
                         if (!orderId || !invoiceId) {
                         console.log("IDs nisu dosli iz metadata!!: ", intent.metadata);
@@ -85,26 +85,51 @@ export async function POST(request: Request) {
                         //     break;
                         //     }
 
-                            await prisma.paymentIntents.update({
-                                where: { id: orderId},
-                                data: {
-                                    //status: isPartial ? "Capture_required": "Succeeded",
-                                    status: "Succeeded",
-                                    amount: intent.amount_received ?? intent.amount,
-                                    currency: intent.currency,
-                                    capturedAmount: intent.amount_received ?? intent.amount, //dodan captured_amount za provjeru!
-                                } 
-                            });
+                            const dbIntent = await prisma.paymentIntents.update({
+                                    where: { id: orderId},
+                                    data: {
+                                        status: isPartial ? "Partially captured": "Succeeded",
+                                        //status: "Succeeded",
+                                        //amount: intent.amount_received ?? intent.amount,
+                                        currency: intent.currency,
+                                        capturedAmount: intent.amount_received ?? intent.amount, //dodan captured_amount za provjeru!
+                                    } 
+                                });
 
                             await prisma.invoice.update({
                                 where: { id: invoiceId},
                                 data: {
-                                    //status: isPartial ? "Captured_partially": "Succeeded",
+                                    //status: isPartial ? "Partially captured": "Succeeded",
                                     status: "Succeeded",
                                     total: intent.amount_received ?? intent.amount,
                                 } 
                             });
                             console.log("USPJESAN DB APDEJT ZA SUCCESS PLACANJA");
+
+                            // if(isPartial) {
+                            //     //napraviti novi paymentintent i stripe paymentintent
+
+                            //    const newIntent = await stripe.paymentIntents.create({
+                            //             amount: (intent.amount - intent.amount_received),
+                            //             currency: dbIntent.currency,
+                            //         });
+
+                            //     const partialPayment = await prisma.paymentIntents.create({ 
+                            //             data: {
+                            //                 email: dbIntent.email,
+                            //                 userId: dbIntent.userId,
+                            //                 role: dbIntent.role,
+                            //                 firstName: dbIntent.firstName,
+                            //                 lastName: dbIntent.lastName,
+                            //                 status: "Final_capture_required",
+                            //                 amount: (intent.amount - intent.amount_received),
+                            //                 currency: dbIntent.currency,
+                            //                 partialPayId: dbIntent.stripeId,
+                            //                 isPartial: true,
+                            //                 stripeId: newIntent.id,
+                            //             },
+                            //         });
+                            // }
                         }
                      catch (err) {
                         console.error('Error u payment_intent.succeeded: ',err);
