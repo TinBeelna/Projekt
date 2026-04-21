@@ -2,45 +2,37 @@
 
 import { prisma } from '@/app/lib/prisma' 
 import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
+//import { cookies } from 'next/headers'
 import { stripe } from "@/app/lib/stripe";
-import bcrypt from 'bcrypt';
-
+import bcrypt from 'bcryptjs';
+import { signIn } from "@/app/lib/auth"; // path to your auth.ts
+import { AuthError } from "next-auth";
+import {signOut} from "@/app/lib/auth"
 
 
 export async function loginUser(formData: FormData) {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
-    // nadi korisnika u bazi
-    const user = await prisma.user.findUnique({
-        where: { email }
-    })
-
-    const isPasswordOk = user ? await bcrypt.compare(password, user.password) : false;
-
-    if (!user || !isPasswordOk) {
-        // ako nema korisnika ili password ne odgovara, vrati error
-        return { error: 'Invalid email or password' };
+    try {
+        await signIn("credentials", {
+            email,
+            password,
+            redirectTo: "/",
+        });
+    } catch (err) {
+        if (err instanceof AuthError) {
+            return { error: 'Kivi mail ili pass'};
+        }
+        throw err;
     }
-    const cookieStore = await cookies();
-    cookieStore.set('userEmail', user.email, { //cookies za pamcenje logina
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-    });
-
-    cookieStore.set('userRole', user.role, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-});
+    
    
-if (user.role === 'ADMIN') {
-  redirect(`/admin/admin-dashboard`);
-} else {
-  redirect(`/user/user-dashboard`);
-}
+// if (user.role === 'ADMIN') {
+//   redirect(`/admin/admin-dashboard`);
+// } else {
+//   redirect(`/user/user-dashboard`);
+// }
 
 }
 
@@ -88,34 +80,32 @@ export async function registerUser(formData: FormData) {
     }
 });
 
-    const cookieStore = await cookies();
-    cookieStore.set('userEmail', newUser.email, { //cookies za pamcenje logina
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        path: '/',
-    });
+    try {
+        await signIn("credentials", {
+            email,
+            password,
+            redirectTo: "/user/user-dashboard," //middleware provjerava ulogu
+        });
+    } catch (err) {
+        if (err instanceof AuthError) {
+            return { error: "Registracija uspjela ali login ne!"}
+        }
+        throw err;
+    }
+ 
 
-    cookieStore.set('userRole', newUser.role, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-});
-
-    if (newUser.role === 'ADMIN') {
-  redirect(`/admin/admin-dashboard`);
-} else {
-  redirect(`/user/user-dashboard`);
-}
+//     if (newUser.role === 'ADMIN') {
+//   redirect(`/admin/admin-dashboard`);
+// } else {
+//   redirect(`/user/user-dashboard`);
+// }
 
 }
 
 //logout
 
 export async function logoutUser() {
-    const cookieStore = await cookies();
-    cookieStore.delete('userEmail');
-    cookieStore.delete('userRole'); 
-    redirect('/');
+    await signOut({ redirectTo: "/" });
 }
 
 

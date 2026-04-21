@@ -1,11 +1,13 @@
 import { prisma } from "@/app/lib/prisma"; 
 import { notFound, redirect } from "next/navigation";
-import { cookies } from "next/headers";
-export async function isAdmin() {
-    const cookieStore = await cookies();
-    const email = cookieStore.get('userEmail')?.value;
+//import { cookies } from "next/headers";
+import { auth } from "@/app/lib/auth"
 
-    if(!email) return null; //ako nema emaila u cookies, vrati null
+export async function isAdmin() {
+    const session = await auth();
+    const email = session?.user?.email;
+
+    if(!email) return null; //ako nema emaila u auth, vrati null
 
     const user = await prisma.user.findUnique({
         where: { email }

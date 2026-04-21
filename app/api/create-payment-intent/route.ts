@@ -3,14 +3,15 @@ import { stripe } from "../../lib/stripe";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { prisma } from "app/lib/prisma";
+import { auth } from "@/app/lib/auth"
 
 export async function POST(req: Request) {
   try {
     const { amount, itemName, currency } = await req.json();
 
     //dodatak: preko keksica maila dobivam usera
-    const cookie = await cookies();
-    const email = cookie.get("userEmail")?.value;
+    const session = await auth();
+    const email= session?.user?.email;
 
     if(!email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); 

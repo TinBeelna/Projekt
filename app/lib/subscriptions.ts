@@ -1,9 +1,10 @@
 "use server";
 import { prisma } from "@/app/lib/prisma";
 import { stripe } from "@/app/lib/stripe";
-import { cookies } from 'next/headers'
+//import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from "next/cache";
+import { auth } from "@/app/lib/auth"
 
 
 // const PRICE_IDS_EUR = { //cijene, ali samo u eurima
@@ -24,8 +25,12 @@ type Duration = keyof typeof PRICE_IDS;
 
 //za update kartice (u slucaju faila)
 export async function createCustomerPortal() {
-    const cookieStore = await cookies();
-    const userEmail = cookieStore.get('userEmail')?.value;
+    const session = await auth();
+    const userEmail = session?.user?.email;
+
+    if(!userEmail) {
+        return; //ako nema maila (ts fix)
+    }
 
     const user = await prisma.user.findUnique({
         where: { email: userEmail }
@@ -49,8 +54,12 @@ export async function createCustomerPortal() {
 
 export async function requestSubscription(duration: Duration, currency: string) {
     const priceId = PRICE_IDS[duration];
-    const cookieStore = await cookies(); 
-    const userEmail = cookieStore.get('userEmail')?.value;
+    const session = await auth();
+    const userEmail = session?.user?.email;
+
+    if(!userEmail) {
+        return; //ako nema maila (ts fix)
+    }
 
    const user = await prisma.user.findUnique({
         where: { 

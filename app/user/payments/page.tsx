@@ -1,10 +1,15 @@
 import { prisma } from "@/app/lib/prisma";
-import { cookies } from "next/headers";
+//import { cookies } from "next/headers";
+import { auth } from "@/app/lib/auth";
 
 export default async function PaymentsPage() {
 
-    const cookie = await cookies();
-    const mail = cookie.get("userEmail")?.value;
+    const session = await auth();
+    const mail = session?.user?.email;
+
+    if (!mail) {
+      return;
+    }
 
     const user = await prisma.user.findUnique({ //user po mailu iz cookies
       where: {email: mail}

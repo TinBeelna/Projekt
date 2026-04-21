@@ -1,15 +1,16 @@
 import { prisma } from "@/app/lib/prisma";
-import { cookies } from "next/headers";
+//import { cookies } from "next/headers";
 import PartialRefundButton from "@/app/components/PartialRefundButton"; 
 import FullRefundButton from "@/app/components/RefundButton";
+import { auth } from "@/app/lib/auth"
 
 // sql changes instant; google preporuka
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function RefundsPage() {
-  const cookie = await cookies();
-  const mail = cookie.get("userEmail")?.value;
+  const session = await auth();
+  const mail = session?.user?.email;
 
   if (!mail) return <div className="p-10 text-red-600">Niste prijavljeni.</div>;
 

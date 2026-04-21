@@ -1,11 +1,12 @@
 // app/user/subscriptions/page.tsx
-import { cookies } from "next/headers";
+//import { cookies } from "next/headers";
 import { prisma } from "@/app/lib/prisma";
 import SubscriptionButtons from "@/app/components/SubButtons";
+import { auth } from "@/app/lib/auth"
 
 export default async function MySubscriptionsPage() {
-  const cookieStore = await cookies();
-  const email = cookieStore.get("userEmail")?.value;
+  const session = await auth();
+  const email = session?.user?.email;
 
   const user = await prisma.user.findUnique({
     where: { email: email || "" },
@@ -76,7 +77,7 @@ export default async function MySubscriptionsPage() {
           endDate={endDate as Date}
         />
 
-        {/* 🔥 CANCEL STATUS INFO (NEW) */}
+        {/* cancel status info*/}
         {isCancelScheduled && (
           <div className="mt-4 p-4 rounded-xl border border-orange-200 bg-orange-50">
             {/* <p className="text-xs font-bold uppercase text-orange-700">
@@ -92,7 +93,7 @@ export default async function MySubscriptionsPage() {
           </div>
         )}
       </section>
-        {/*INVOICES*/}
+        {/* racuni */}
             <hr className="border-gray-100" />
       <section>
         <h2 className="text-xl font-bold mb-4">Račun pretplate:</h2>
@@ -107,12 +108,12 @@ export default async function MySubscriptionsPage() {
               <div key={inv.id} className="p-4 border rounded-xl bg-white shadow-sm hover:border-blue-200 transition-colors">
               <div className="flex justify-between items-center">
                 <div className="space-y-1">
-                  {/* Broj računa */}
+                  {/* broj racuna */}
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-bold text-gray-700">{inv.invoiceNumber || "Račun"}</p>
                   </div>
 
-                  {/* KLJUČNI DIO: Od kada do kada vrijedi */}
+                  {/* od kada do kada vrijedi pretplata; prikazi prema placenim racunima za taj period */}
                   <div className="text-[11px] text-gray-500 font-medium">
                     <p>📅 Razdoblje: <span className="text-gray-700">{new Date(inv.periodStart!).toLocaleDateString('hr-HR')}</span> — <span className="text-gray-700">{new Date(inv.periodEnd!).toLocaleDateString('hr-HR')}</span></p>
                     {inv.paidAt && (

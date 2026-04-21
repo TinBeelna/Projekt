@@ -9,12 +9,12 @@ export default async function AdminDashboardPage() {
     orderBy: { createdAt: 'desc' }
   });
 
-  const ordersToFinish = await prisma.paymentIntents.findMany({
-    where: { 
-      status: "Final_capture_required",
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  // const ordersToFinish = await prisma.paymentIntents.findMany({ //izvuci paymente koji su imali capture
+  //   where: { 
+  //     status: "Final_capture_required",
+  //   },
+  //   orderBy: { createdAt: 'desc' }
+  // });
 
   return (
     <div className="p-8">
