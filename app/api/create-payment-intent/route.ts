@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { stripe } from "../../lib/stripe";
-import { cookies } from "next/headers";
+//import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { prisma } from "app/lib/prisma";
 import { auth } from "@/app/lib/auth"
+import { checkRateLimit } from "app/lib/rateLimit";
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); 
     }
 
-    const user = await prisma.user.findUnique({ //user po mailu iz cookies
+    const user = await prisma.user.findUnique({ //user po mailu iz auth
       where: {email: email},
       include: { //dodatak ima li default card
         cards: {
@@ -28,6 +29,14 @@ export async function POST(req: Request) {
 
     if(!user) {
       return NextResponse.json( { message: "Korisnik ne postoji"}, { status: 404});
+    }
+
+    const { allowed, retryAfter } = await checkRateLimit(user.id); //rate limit
+    if (!allowed) {
+      return NextResponse.json(
+        { error: `Previse payment intent requesta u intervalu! Pokusaj ponovo nakon ${Math.ceil(retryAfter! / 60)} minuta.` },
+        { status: 429, headers: { "Retry-After": String(retryAfter) } }
+      );
     }
 
     const defaultCard = user?.cards[0];

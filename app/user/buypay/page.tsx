@@ -15,6 +15,7 @@ const [clientSecret, setClientSecret] = useState<string>("");
 const [FXcurrency, setCurrency] = useState('eur'); //dodano za fx; eur kao standardna
 const [hasDefaultCard, setDefaultCard] = useState<boolean | null>(null); //default payment 
 const [isAuthorizing, setIsAuthorizing] = useState<boolean>(false); //default payment 3ds handling
+const [rateLimitError, setRateLimitError] = useState<string | null>(null);
 const [rates, setRates] = useState<{ [key: string]: number}>({eur: 1, usd: 1.08, gbp: 0.85}); //default fallback fx
 const currencySymbols = {
     usd: '$',
@@ -70,21 +71,30 @@ const convertPrice = (amountEurCents: number) => {
 
 
 const initiatePayment = async (item: string, amount: number, currency: string) => {
-  setItem(item); 
-  setIsAuthorizing(true); // loading screen;
+  setItem(item);
+  setIsAuthorizing(true);
+  setRateLimitError(null);
 
   try {
     const response = await fetch("/api/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        amount: amount, 
+      body: JSON.stringify({
+        amount: amount,
         itemName: item,
-        currency: FXcurrency, 
+        currency: FXcurrency,
       }),
     });
-    
-    const { clientSecret, hasDefaultCard } = await response.json();
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setRateLimitError(data.error || "Doslo je do greske. Pokusaj ponovo.");
+      setIsAuthorizing(false);
+      return;
+    }
+
+    const { clientSecret, hasDefaultCard } = data;
     const stripe = await stripePromise;
     setDefaultCard(hasDefaultCard);
 
@@ -162,6 +172,13 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
           </div>
         ) : (
           <>
+            {/* Poruka o rate limitu */}
+            {rateLimitError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {rateLimitError}
+              </div>
+            )}
+
             {/* Gumbovi za kupnju (dok nema client secreta) */}
             {!clientSecret && (
               <div className="space-y-4 flex flex-col">

@@ -134,13 +134,19 @@ amount            Int?               @default(0)
 
 model disputes{
   id              Int      @id @default(autoincrement()) @unique
-  disputeId         String             @unique  
+  disputeId         String             @unique
   paymentIntent     paymentIntents?    @relation(fields: [paymentStripeId], references: [stripeId])
-  chargeId          String             
+  chargeId          String
  // charge            charges?           @relation(fields: [chargeId], references: [stripeId])
   paymentStripeId   String?
   reason            String?
   status            String
   evidence          String?           //ovdje je idejno
-  amount            Int?               @default(0)       
+  amount            Int?               @default(0)
+}
+
+model RateLimit {
+  userId      Int      @id
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
 }
