@@ -1,92 +1,84 @@
 import Link from "next/link";
 import { logoutUser } from "../actions";
 
-export function AdminNavbar() {
-    return (
-    <aside className="w-80 bg-slate-900 text-white min-h-screen p-6 flex flex-col shadow-xl">
-        <nav className="flex flex-col gap-12 flex-1">
-            <Link href="/admin/admin-dashboard" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    🏠 Dashboard
-  </Link>
-    <Link href="/admin/subscriptions" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    📦 Subscriptions
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 transition text-sm font-medium text-slate-200 hover:text-white"
+    >
+      {children}
     </Link>
-    <Link href="/admin/users" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    👥 Users
-    </Link>
-    <Link href="/admin/webhooks" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    🕒 Webhooks
-    </Link>
-    <Link href="/admin/refunds" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    🔄 Refunds
-    </Link>
-    <Link href="/admin/disputes" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    ⚠️ DISPUTES
-    </Link>
-    <Link href="/admin/balance" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    💰 Payouts and balance 💶
-    </Link>
-</nav>
-<div className="mt-auto">
-    <form action={logoutUser}>
-        <button type = "submit" className="mt-6 bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition">
-            Logout
+  );
+}
+
+function LogoutButton() {
+  return (
+    <div className="px-3 pb-4">
+      <form action={logoutUser}>
+        <button
+          type="submit"
+          className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-slate-800 hover:text-red-300 transition"
+        >
+          ⬅ Logout
         </button>
-    </form>
-</div>
-</aside>
-);
+      </form>
+    </div>
+  );
+}
+
+export function AdminNavbar() {
+  return (
+    <aside className="w-64 bg-slate-900 text-white min-h-screen flex flex-col shadow-xl flex-shrink-0">
+      <div className="px-6 py-5 border-b border-slate-800">
+        <h1 className="text-base font-bold text-white">PayDash</h1>
+        <p className="text-xs text-slate-400 mt-0.5">Admin Panel</p>
+      </div>
+      <nav className="flex flex-col gap-1 flex-1 p-3">
+        <NavLink href="/admin/admin-dashboard">🏠 Dashboard</NavLink>
+        <NavLink href="/admin/subscriptions">📦 Subscriptions</NavLink>
+        <NavLink href="/admin/users">👥 Users</NavLink>
+        <NavLink href="/admin/webhooks">🕒 Webhooks</NavLink>
+        <NavLink href="/admin/refunds">🔄 Refunds</NavLink>
+        <NavLink href="/admin/disputes">⚠️ Disputes</NavLink>
+        <NavLink href="/admin/balance">💰 Balance & Payouts</NavLink>
+      </nav>
+      <LogoutButton />
+    </aside>
+  );
 }
 
 export function UserNavbar() {
-    return (
-    <aside className="w-80 bg-slate-900 text-white min-h-screen p-6 flex flex-col shadow-xl">
-        <nav className="flex flex-col gap-12 flex-1">
-            <Link href="/user/user-dashboard" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-      Dashboard
-    </Link>
-    <Link href="/user/buypay" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-     📦 Buypay 
-    </Link>
-    <Link href="/user/payments" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    $ Payments
-    </Link>
-    <Link href="/user/refunds" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    🔄 Refunds
-    </Link>
-    <Link href="/user/mysubscriptions" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    � My Subscriptions
-    </Link>
-    <Link href="/user/paymentmethods" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-    💵 My payment methods
-    </Link>
-</nav>
-<div className="mt-auto">
-    <form action={logoutUser}>
-        <button type = "submit" className="mt-6 bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition">
-            Logout
-        </button>
-    </form>
-</div>
-</aside>
-);
+  return (
+    <aside className="w-64 bg-slate-900 text-white min-h-screen flex flex-col shadow-xl flex-shrink-0">
+      <div className="px-6 py-5 border-b border-slate-800">
+        <h1 className="text-base font-bold text-white">PayDash</h1>
+        <p className="text-xs text-slate-400 mt-0.5">User Portal</p>
+      </div>
+      <nav className="flex flex-col gap-1 flex-1 p-3">
+        <NavLink href="/user/user-dashboard">🏠 Dashboard</NavLink>
+        <NavLink href="/user/buypay">🛒 Buy & Pay</NavLink>
+        <NavLink href="/user/payments">💳 Payments</NavLink>
+        <NavLink href="/user/refunds">🔄 Refunds</NavLink>
+        <NavLink href="/user/mysubscriptions">📋 My Subscriptions</NavLink>
+        <NavLink href="/user/paymentmethods">💵 Payment Methods</NavLink>
+      </nav>
+      <LogoutButton />
+    </aside>
+  );
 }
 
 export function RefundAdminNavbar() {
-    return (
-    <aside className="w-80 bg-slate-900 text-white min-h-screen p-6 flex flex-col shadow-xl">
-        <nav className="flex flex-col gap-12 flex-1">
-            <Link href="/refundAdmin/refunds" className="p-3 hover:bg-slate-800 rounded transition font-medium">
-            🔄 Refunds
-            </Link>
-        </nav>
-        <div className="mt-auto">
-            <form action={logoutUser}>
-                <button type = "submit" className="mt-6 bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition">
-                    Logout
-                </button>
-            </form>
-        </div>
-        </aside>
-);
+  return (
+    <aside className="w-64 bg-slate-900 text-white min-h-screen flex flex-col shadow-xl flex-shrink-0">
+      <div className="px-6 py-5 border-b border-slate-800">
+        <h1 className="text-base font-bold text-white">PayDash</h1>
+        <p className="text-xs text-slate-400 mt-0.5">Refund Admin</p>
+      </div>
+      <nav className="flex flex-col gap-1 flex-1 p-3">
+        <NavLink href="/refundAdmin/refunds">🔄 Refunds</NavLink>
+      </nav>
+      <LogoutButton />
+    </aside>
+  );
 }

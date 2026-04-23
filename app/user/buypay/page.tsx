@@ -139,30 +139,34 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
 
 
     return (
-    <div id="checkout" className="mx-auto max-w-md p-8">
-      <h1 className="text-2xl font-bold mb-5"> Klikni na ono sto zelis kupiti: novine (automatski) ili knjigu (ceka se na manual capture admina) </h1>
-      <div className="space-y-4">
+    <div id="checkout" className="p-8 max-w-lg">
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Kupi & Plati</h1>
+      <p className="text-sm text-gray-500 mb-8">Klikni na ono sto zelis kupiti: novine (automatski) ili knjigu (ceka se na manual capture admina)</p>
+      <div className="space-y-6">
 
         {/* FX: Gumbovi za biranje valute */}
-        <div className="flex gap-2 mb-8">
-          <button 
-            onClick={() => setCurrency('usd')}
-            className={`px-4 py-2 border rounded ${FXcurrency === 'usd' ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}
-          >
-            USD ($)
-          </button>
-          <button 
-            onClick={() => setCurrency('eur')}
-            className={`px-4 py-2 border rounded ${FXcurrency === 'eur' ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}
-          >
-            EUR (€)
-          </button>
-          <button 
-            onClick={() => setCurrency('gbp')}
-            className={`px-4 py-2 border rounded ${FXcurrency === 'gbp' ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}
-          >
-            GBP (£)
-          </button>
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Odaberi valutu</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrency('usd')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold border transition ${FXcurrency === 'usd' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+            >
+              USD ($)
+            </button>
+            <button
+              onClick={() => setCurrency('eur')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold border transition ${FXcurrency === 'eur' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+            >
+              EUR (€)
+            </button>
+            <button
+              onClick={() => setCurrency('gbp')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold border transition ${FXcurrency === 'gbp' ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'}`}
+            >
+              GBP (£)
+            </button>
+          </div>
         </div>
 
         {/* Ako se kartica autorizira prikazi tekst */}
@@ -181,19 +185,21 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
 
             {/* Gumbovi za kupnju (dok nema client secreta) */}
             {!clientSecret && (
-              <div className="space-y-4 flex flex-col">
-                <button 
-                  onClick={() => initiatePayment("Novine", convertPrice(200), FXcurrency)} 
-                  className="bg-blue-600 text-white p-3 rounded"
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => initiatePayment("Novine", convertPrice(200), FXcurrency)}
+                  className="w-full flex justify-between items-center bg-white border-2 border-gray-200 hover:border-blue-500 text-gray-900 px-5 py-4 rounded-xl font-semibold text-sm transition group"
                 >
-                  Kupi novine (Cijena: {displayPrice(200)})
+                  <span>Kupi novine</span>
+                  <span className="text-blue-600 font-bold">{displayPrice(200)}</span>
                 </button>
 
-                <button 
+                <button
                   onClick={() => initiatePayment("Knjiga", convertPrice(500), FXcurrency)}
-                  className="bg-blue-600 text-white p-3 rounded"
+                  className="w-full flex justify-between items-center bg-white border-2 border-gray-200 hover:border-blue-500 text-gray-900 px-5 py-4 rounded-xl font-semibold text-sm transition group"
                 >
-                  Kupi knjigu (Cijena: {displayPrice(500)})
+                  <span>Kupi knjigu</span>
+                  <span className="text-blue-600 font-bold">{displayPrice(500)}</span>
                 </button>
               </div>
             )}

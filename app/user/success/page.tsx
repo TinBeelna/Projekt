@@ -39,7 +39,7 @@ export default async function SuccessPage({ searchParams }: { searchParams: Prom
     displayKey = "cancel";
   } 
   
-  // 2. CASE: SUBSCRIPTION (Checkout Session)
+  // 2. CASE: SUBSCRIPTION (Checkout Session) 
   else if (sessionId) {
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId, {
@@ -86,36 +86,40 @@ export default async function SuccessPage({ searchParams }: { searchParams: Prom
   const content = STATUS_CONTENT_MAP[displayKey] || STATUS_CONTENT_MAP.default;
 
   return (
-    <div id="payment-status" className="flex flex-col items-center justify-center min-h-screen p-6">
-      <div id="status-icon" style={{ backgroundColor: content.iconColor, padding: '15px', borderRadius: '50%', marginBottom: '20px' }}>
+    <div id="payment-status" className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50">
+      <div
+        id="status-icon"
+        className="flex items-center justify-center w-14 h-14 rounded-full mb-5"
+        style={{ backgroundColor: content.iconColor }}
+      >
         {content.icon}
       </div>
-      <h2 id="status-text" className="text-2xl font-bold mb-6">{content.text}</h2>
-      
-      <div id="details-table" className="w-full max-w-md bg-white border rounded-xl overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse">
+      <h2 id="status-text" className="text-2xl font-bold text-gray-900 mb-6 text-center">{content.text}</h2>
+
+      <div id="details-table" className="w-full max-w-md bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table className="w-full text-left">
           <tbody className="divide-y divide-gray-100">
             <tr>
-              <td className="p-4 font-semibold text-gray-500">Status</td>
-              <td className="p-4 text-gray-900 capitalize">{displayStatus || "N/A"}</td>
+              <td className="px-5 py-4 text-sm font-semibold text-gray-500">Status</td>
+              <td className="px-5 py-4 text-sm text-gray-900 capitalize">{displayStatus || "N/A"}</td>
             </tr>
             {orderDetails && (
               <>
                 <tr>
-                  <td className="p-4 font-semibold text-gray-500">Proizvod</td>
-                  <td className="p-4 text-gray-900">{orderDetails.items || "Usluga"}</td>
+                  <td className="px-5 py-4 text-sm font-semibold text-gray-500">Proizvod</td>
+                  <td className="px-5 py-4 text-sm text-gray-900">{orderDetails.items || "Usluga"}</td>
                 </tr>
                 <tr>
-                  <td className="p-4 font-semibold text-gray-500">Datum</td>
-                  <td className="p-4 text-gray-900">{new Date(orderDetails.createdAt).toLocaleDateString('hr-HR')}</td>
+                  <td className="px-5 py-4 text-sm font-semibold text-gray-500">Datum</td>
+                  <td className="px-5 py-4 text-sm text-gray-900">{new Date(orderDetails.createdAt).toLocaleDateString('hr-HR')}</td>
                 </tr>
               </>
             )}
           </tbody>
         </table>
       </div>
-      
-      <a id="retry-button" href="/" className="mt-8 bg-blue-600 text-white px-8 py-3 rounded-full hover:bg-blue-700 transition">
+
+      <a id="retry-button" href="/" className="mt-8 bg-blue-600 text-white px-8 py-3 rounded-xl text-sm font-semibold hover:bg-blue-700 transition">
         Vrati se na početnu
       </a>
     </div>

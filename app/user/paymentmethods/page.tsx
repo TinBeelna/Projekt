@@ -1,10 +1,11 @@
-import { cookies } from "next/headers";
+//import { cookies } from "next/headers";
 import { prisma } from "@/app/lib/prisma";
 import PaymentMethodsClient from "./paymentmethodsclient";
+import { auth } from "@/app/lib/auth"
 
 export default async function PaymentMethodsPage() {
-    const cookieStore = await cookies();
-    const email = cookieStore.get("userEmail")?.value;
+    const session = await auth();
+    const email = session?.user?.email;
 
     const user = await prisma.user.findUnique({
         where: { email: email || "" },
@@ -12,6 +13,6 @@ export default async function PaymentMethodsPage() {
     
     const userId = user?.stripeId || "no_id";
 
-    // Pass the server-fetched userId to the Client Component
+    //Id se salje korisniku (client compponent); radi problema sa dobivanjem userId bilo je potrebno odvojiti client i server strane
     return <PaymentMethodsClient userId={userId} />;
 }

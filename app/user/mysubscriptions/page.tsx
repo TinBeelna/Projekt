@@ -39,11 +39,14 @@ export default async function MySubscriptionsPage() {
 
 
   return (
-    <div className="max-w-2xl mx-auto p-10 space-y-10">
+    <div className="p-8 max-w-3xl space-y-8">
       <section>
-        <h1 className="text-3xl font-bold mb-6">Moja Pretplata</h1>
-         <h4 className="text-sm ">Note 1: U slučaju downgradea, daje se "kredit" za buduce pretplate</h4>
-         <h4 className="text-sm ">Note 2: U slučaju ažuriranja pretplate (upgrade/downgrade) valuta plaćanja se ne može mijenjati </h4>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Moja Pretplata</h1>
+        <p className="text-sm text-gray-500 mb-4">Upravljajte svojom pretplatom i pregledajte račune.</p>
+        <div className="text-xs text-gray-400 space-y-0.5 mb-6">
+          <p>Note 1: U slučaju downgradea, daje se "kredit" za buduce pretplate</p>
+          <p>Note 2: U slučaju ažuriranja pretplate (upgrade/downgrade) valuta plaćanja se ne može mijenjati</p>
+        </div>
         {activeSubscriptions.length === 0 ? (
           <p className="text-gray-500 bg-gray-50 p-4 rounded-lg border border-dashed text-center">
             Trenutno nemate aktivnih pretplata.
@@ -65,9 +68,9 @@ export default async function MySubscriptionsPage() {
         )}
       </section>
 
-      <hr className="border-gray-100" />
-            <section>
-        <h2 className="text-xl font-bold mb-4">Otkazivanje pretplata:</h2>
+      <hr className="border-gray-200" />
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Otkazivanje pretplata:</h2>
 
         <SubscriptionButtons 
           activeSubId={latestSubId}
@@ -93,10 +96,10 @@ export default async function MySubscriptionsPage() {
           </div>
         )}
       </section>
-        {/* racuni */}
-            <hr className="border-gray-100" />
+      {/* racuni */}
+      <hr className="border-gray-200" />
       <section>
-        <h2 className="text-xl font-bold mb-4">Račun pretplate:</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Račun pretplate:</h2>
         
         {invoices.length === 0 ? (
           <p className="text-gray-500 bg-gray-50 p-4 rounded-lg border border-dashed text-center italic text-sm">

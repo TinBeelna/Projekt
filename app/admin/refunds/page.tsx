@@ -23,13 +23,13 @@ export default async function AdminRefundsPage() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-10 space-y-12 font-sans">
+    <div className="p-8 space-y-10">
       {/* AKTIVNI ZAHTJEVI */}
       <div>
         <div className="flex justify-between items-end mb-6">
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">Zahtjevi za povrat</h1>
-                <p className="text-gray-500 text-sm">Popis korisnika koji traže povrat novca na karticu.</p>
+                <h1 className="text-2xl font-bold text-gray-900">Zahtjevi za povrat</h1>
+                <p className="text-sm text-gray-500 mt-1">Popis korisnika koji traže povrat novca na karticu.</p>
             </div>
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Na čekanju: {refundRequests.length}
@@ -43,13 +43,13 @@ export default async function AdminRefundsPage() {
         ) : (
           <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-100">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-gray-600">Korisnik</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-blue-600">Preostalo na kartici</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-red-600">Traženi Povrat</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase text-gray-600">Tip</th>
-                  <th className="px-6 py-4 text-center text-xs font-bold uppercase text-gray-600">Akcija</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Korisnik</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-blue-500 uppercase">Preostalo na kartici</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-red-500 uppercase">Traženi Povrat</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Tip</th>
+                  <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Akcija</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -111,12 +111,12 @@ export default async function AdminRefundsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-400">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">Kupac</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase text-green-600">Vraćeno</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">Vrijeme:</th>
-                  <th className="px-6 py-3 text-left text-xs font-bold uppercase text-gray-500">Stripe ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Kupac</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-green-600 uppercase">Vraćeno</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Stripe ID:</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Vrijeme:</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">

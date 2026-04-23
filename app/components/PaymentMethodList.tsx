@@ -89,32 +89,32 @@ export default function PaymentMethodList({ userId, onAddNewClick}: PaymentMetho
     }
 
     if (loading) { //estetika za ucitavanje
-        return <div> Ucitavam metode placanja....</div>
+        return <div className="p-6 text-sm text-gray-400">Ucitavam metode placanja....</div>
     }
     return ( //onAddNewClick iz parent komponente za otvaranje forme za dodavanje nove kartice
-    <div className="payment-methods">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">METODE PLACANJA</h2>
+    <div>
+      <div className="flex justify-between items-center mb-5">
+        <h2 className="text-lg font-semibold text-gray-900">METODE PLACANJA</h2>
         <button
           onClick={onAddNewClick}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
         >
           Add New Card
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg mb-4">
           {error}
         </div>
       )}
 
       {paymentMethods.length === 0 ? ( // ako nema metoda placanja pokazi to
-        <div className="text-center py-6 bg-gray-50 rounded-md">
-          <p className="text-gray-500">Nema spremljenih metoda placanja.</p>
+        <div className="text-center py-10 bg-white border-2 border-dashed border-gray-200 rounded-xl">
+          <p className="text-gray-400 text-sm mb-3">Nema spremljenih metoda placanja.</p>
           <button
             onClick={onAddNewClick}
-            className="mt-2 text-blue-600 hover:underline"
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium transition"
           >
             Dodaj prvu metodu placanja
           </button>
@@ -124,36 +124,36 @@ export default function PaymentMethodList({ userId, onAddNewClick}: PaymentMetho
           {paymentMethods.map(method => (
             <li
               key={method.id}
-              className="border rounded-md p-4 flex justify-between items-center"
+              className="bg-white border border-gray-200 rounded-xl px-5 py-4 flex justify-between items-center shadow-sm hover:border-gray-300 transition"
             >
-              <div className="flex items-center space-x-3">
-                <div className="text-xl">💳</div>
+              <div className="flex items-center gap-4">
+                <div className="text-2xl">💳</div>
                 <div>
-                  <div className="font-medium">
+                  <div className="text-sm font-semibold text-gray-900">
                     {formatCardBrand(method.CardBrand)} •••• {method.LastFour} {/*Prikaz brenda/zadnja 4 broja*/}
                     {method.isDefault && (
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 py-1 px-2 rounded-full">
+                      <span className="ml-2 text-xs bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full font-medium">
                         Default {/*Ako je default*/}
                       </span>
                     )}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-xs text-gray-400 mt-0.5">
                     Expiration date: {method.ExpMonth}/{method.ExpYear}
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 {!method.isDefault && (
                   <button
                     onClick={() => handleSetDefault(method.paymentMethodId)}
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition"
                   >
                     Set Default
                   </button>
                 )}
                 <button
                   onClick={() => handleDelete(method.paymentMethodId)}
-                  className="px-3 py-1 text-sm text-red-600 border border-red-300 rounded-md hover:bg-red-50"
+                  className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition"
                 >
                   Izbrisi
                 </button>

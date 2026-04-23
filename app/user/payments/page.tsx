@@ -11,7 +11,7 @@ export default async function PaymentsPage() {
       return;
     }
 
-    const user = await prisma.user.findUnique({ //user po mailu iz cookies
+    const user = await prisma.user.findUnique({ //user po mailu iz auth
       where: {email: mail}
     });
 
@@ -29,26 +29,26 @@ export default async function PaymentsPage() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
+    <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Moja Plaćanja</h1>
-        <p className="text-gray-500">Povijest svih vaših transakcija za {mail}</p>
+        <h1 className="text-2xl font-bold text-gray-900">Moja Plaćanja</h1>
+        <p className="text-sm text-gray-500 mt-1">Povijest svih vaših transakcija za {mail}</p>
       </div>
       {userPayments.length === 0 ? (
-        <div className="bg-gray-50 border-2 border-dashed rounded-xl p-12 text-center text-gray-400">
+        <div className="bg-white rounded-xl border-2 border-dashed border-gray-200 p-12 text-center text-gray-400">
           Još niste izvršili nijedno plaćanje.
         </div>
       ) : (
-        <div className="bg-white shadow-sm border rounded-xl overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Datum i vrijeme</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Proizvod</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Iznos (ukupno)</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Iznos (plaćen)</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Datum i vrijeme</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Proizvod</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Iznos (ukupno)</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Iznos (plaćen)</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 text-sm">

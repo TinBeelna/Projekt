@@ -31,24 +31,24 @@ export default async function RefundsPage() {
   });
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
+    <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Povrat sredstava (Refunds)</h1>
-        <p className="text-gray-500">Preostalo za povrat: {refundablePayments.length} stavki</p>
+        <h1 className="text-2xl font-bold text-gray-900">Povrat sredstava (Refunds)</h1>
+        <p className="text-sm text-gray-500 mt-1">Preostalo za povrat: {refundablePayments.length} stavki</p>
       </div>
 
       {refundablePayments.length === 0 ? (
-        <div className="bg-gray-50 border-2 border-dashed rounded-xl p-12 text-center text-gray-400">
+        <div className="bg-white rounded-xl border-2 border-dashed border-gray-200 p-12 text-center text-gray-400">
           Nemate sredstava dostupnih za povrat.
         </div>
       ) : (
-        <div className="bg-white shadow-sm border rounded-xl overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase text-blue-600">Preostalo</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase">Akcija</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-blue-500 uppercase">Preostalo</th>
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Akcija</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 text-sm">

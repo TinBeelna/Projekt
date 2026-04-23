@@ -18,42 +18,43 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Autorizirana plaćanja (Na čekanju)</h1>
-      
-      <div className="overflow-x-auto shadow-md rounded-lg">
-        <table className="w-full text-left bg-white">
-          <thead className="bg-gray-50 border-b">
+      <h1 className="text-2xl font-bold mb-1 text-gray-900">Autorizirana plaćanja (Na čekanju)</h1>
+      <p className="text-sm text-gray-500 mb-8">Plaćanja koja čekaju potvrdu naplate.</p>
+
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th className="p-4"> Order ID </th>
-              <th className="p-4"> User ID </th>
-              <th className="p-4"> Kupac (Email) </th>
-              <th className="p-4"> Proizvod / Item </th>
-              <th className="p-4"> Iznos:</th>
-              <th className="p-4 text-center"> Akcije </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Order ID</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">User ID</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Kupac (Email)</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Proizvod / Item</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Iznos</th>
+              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Akcije</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
             {pendingOrders.map((order) => (
-              <tr key={order.id} className="border-b hover:bg-gray-50">
-                <td className="p-4 font-mono text-sm text-gray-500"> #{order.id} </td>
-                <td className="p-4 text-sm"> ID: {order.userId || "Gost"} </td>
-                <td className="p-4">
+              <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-4 font-mono text-xs text-gray-400">#{order.id}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">ID: {order.userId || "Gost"}</td>
+                <td className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="font-medium"> {order.firstName} {order.lastName} </span>
-                    <span className="text-xs text-gray-400"> {order.email} </span>
+                    <span className="text-sm font-medium text-gray-900">{order.firstName} {order.lastName}</span>
+                    <span className="text-xs text-gray-400">{order.email}</span>
                   </div>
                 </td>
-                <td className="p-4 italic text-sm">
+                <td className="px-6 py-4 italic text-sm text-gray-600">
                   {order.items || "Nije navedeno"}
                 </td>
-                <td className="p-4 font-bold text-green-700">
+                <td className="px-6 py-4 text-sm font-semibold text-green-700">
                   {((order.amount || 0) / 100).toFixed(2)} ({order.currency as string})
                 </td>
-                <td className="p-4">
+                <td className="px-6 py-4">
                   <div className="flex justify-center">
-                    <CaptureButtons 
+                    <CaptureButtons
                       paymentIntentId={order.stripeId!} // opcionalan u bazi
-                      fullAmount={order.amount || 0} 
+                      fullAmount={order.amount || 0}
                     />
                   </div>
                 </td>
@@ -62,7 +63,7 @@ export default async function AdminDashboardPage() {
           </tbody>
         </table>
         {pendingOrders.length === 0 && (
-          <div className="p-12 text-center text-gray-500 bg-gray-50">
+          <div className="p-12 text-center text-gray-400">
             Trenutno nema narudžbi koje čekaju potvrdu naplate.
           </div>
         )}

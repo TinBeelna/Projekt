@@ -9,7 +9,7 @@ export default function AdminExecuteRefund({ stripeId, amountCents, currency }: 
   return (
     <button
       disabled={isPending}
-      className="bg-black text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-800 disabled:opacity-50"
+      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition disabled:opacity-50"
       onClick={async () => {
         if (!confirm("Sigurno želiš izvršiti isplatu na karticu korisnika?")) return;
 

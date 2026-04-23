@@ -17,11 +17,11 @@ export default async function BalancePage() {
 
 
   return (
-  <div className="p-8 max-w-6xl mx-auto font-sans bg-gray-50 min-h-screen">
-    <header className="mb-10">
-      <h1 className="text-3xl font-extrabold text-gray-900">Balance Check</h1>
-      <p className="text-gray-500">Overview of your multi-currency wallets and recent payouts.</p>
-    </header>
+  <div className="p-8">
+    <div className="mb-8">
+      <h1 className="text-2xl font-bold text-gray-900">Balance Check</h1>
+      <p className="text-sm text-gray-500 mt-1">Overview of your multi-currency wallets and recent payouts.</p>
+    </div>
 
     {/* Currency Wallets Grid */}
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -59,29 +59,29 @@ export default async function BalancePage() {
       <table className="w-full text-left border-collapse">
         <thead className="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th className="p-4 font-semibold text-gray-600 text-sm">Amount</th>
-            <th className="p-4 font-semibold text-gray-600 text-sm">Status</th>
-            <th className="p-4 font-semibold text-gray-600 text-sm">Arrival Date</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Amount</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Arrival Date</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {payouts.data.map((payout) => (
             <tr key={payout.id} className="hover:bg-gray-50 transition-colors">
-              <td className="p-4">
-                <span className="font-bold text-gray-900">
+              <td className="px-6 py-4">
+                <span className="text-sm font-semibold text-gray-900">
                   {formatCurrency(payout.amount, payout.currency)}
                 </span>
               </td>
-              <td className="p-4">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
-                  payout.status === 'paid' 
-                    ? 'bg-green-100 text-green-700' 
+              <td className="px-6 py-4">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase ${
+                  payout.status === 'paid'
+                    ? 'bg-green-100 text-green-700'
                     : 'bg-yellow-100 text-yellow-700'
                 }`}>
                   {payout.status === 'paid' ? 'Plaćeno' : 'U obradi'}
                 </span>
               </td>
-              <td className="p-4 text-sm text-gray-500">
+              <td className="px-6 py-4 text-sm text-gray-500">
                 {new Date(payout.arrival_date * 1000).toLocaleDateString('hr-HR')}
               </td>
             </tr>
