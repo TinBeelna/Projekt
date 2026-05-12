@@ -116,6 +116,7 @@ export async function POST(req: Request) {
             }
           },
         payment_method_types: ['card'],
+        automatic_payment_methods: {enabled: true}, //bonus task: apple pay/google pay
           metadata: {
             orderId: newOrder.id.toString(),
             userId: user.id.toString(),

@@ -36,6 +36,31 @@ export async function loginUser(formData: FormData) {
 
 }
 
+//IBAN
+
+async function generateUniqueIBAN(): Promise<string> {
+    while (true) {
+        const ibanNum = Array.from({ length: 17}, () => Math.floor(Math.random() * 10)).join('');
+        // H=17, R=27; radi se MOD 97 za IBAN
+        const arranged = ibanNum + '1727' + '00';
+        const remainder = BigInt(arranged) % 97n;
+        const checkDigits = String (98n - remainder).padStart(2, '0');
+
+        const finalIBAN = 'HR' + checkDigits + ibanNum;
+
+        const existing = await prisma.user.findUnique(
+        {
+            where: {
+            IBAN: finalIBAN,
+            }
+        }
+        )
+        if (!existing) return finalIBAN;
+    }
+        throw new Error('IBAN vec postoji!!');
+    
+}
+
 //signup
 
 export async function registerUser(formData: FormData) {
@@ -57,7 +82,8 @@ export async function registerUser(formData: FormData) {
 
     const newUser = await prisma.user.create({
         data: {
-            email: email, password: hashedPassword, firstName: firstName, lastName: lastName, role: 'USER' // svi koji se registriraju su USER, samo admini su ADMIN
+            email: email, password: hashedPassword, firstName: firstName, lastName: lastName, role: 'USER', // svi koji se registriraju su USER, samo admini su ADMIN
+            IBAN: await generateUniqueIBAN(),
         }
     })
     //Stripe create customer

@@ -1,5 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 
+export const dynamic = 'force-dynamic';
+
 export default async function WebhooksPage() {
 const logs = await prisma.webhook.findMany({
     orderBy: { createdAt: 'desc' }, 

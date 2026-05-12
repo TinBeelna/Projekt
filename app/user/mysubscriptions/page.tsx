@@ -4,6 +4,8 @@ import { prisma } from "@/app/lib/prisma";
 import SubscriptionButtons from "@/app/components/SubButtons";
 import { auth } from "@/app/lib/auth"
 
+export const dynamic = 'force-dynamic';
+
 export default async function MySubscriptionsPage() {
   const session = await auth();
   const email = session?.user?.email;

@@ -2,6 +2,7 @@
 //"use client";
 import { prisma } from "@/app/lib/prisma";
 import { stripe } from "@/app/lib/stripe";
+import { revalidatePath } from "next/cache";
 //import { cookies } from 'next/headers'
 
 export async function getPaymentMethods(userId: string) { //za prikaz payment methoda
@@ -48,6 +49,7 @@ export async function setAsDefaultMethod(userId: string, paymentMethodId: string
       }
    });
 
+   revalidatePath("/user/paymentmethods");
    return { success: true };
 }
 
@@ -86,6 +88,7 @@ export async function deletePaymentMethod(userId: string, paymentMethodId: strin
       return { success: true, newDefaultId: lastMethod.paymentMethodId };
    }
 
+   revalidatePath("/user/paymentmethods");
    return { success: true, newDefaultId: null};
 }
 
@@ -101,7 +104,7 @@ export async function setupIntentForPaymentMethod(userId: string): Promise<{ cli
 
    const setupIntent = await stripe.setupIntents.create({
       customer: user.stripeId || undefined,
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'google_pay', 'apple_pay'], //bonus task: + apple/google pay
       usage: 'off_session', //da se moze spremiti kartica bez checkouta
    })
    return { clientSecret: setupIntent.client_secret! };
@@ -151,6 +154,7 @@ export async function savePaymentMethod(userId: string, paymentmethodId: string)
             isDefault: isDefault,
          }
       });
+      revalidatePath("/user/paymentmethods");
       return { success: true };
    }
       catch (err) {

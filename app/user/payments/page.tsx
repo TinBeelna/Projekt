@@ -2,22 +2,18 @@ import { prisma } from "@/app/lib/prisma";
 //import { cookies } from "next/headers";
 import { auth } from "@/app/lib/auth";
 
+export const dynamic = 'force-dynamic';
+
 export default async function PaymentsPage() {
 
     const session = await auth();
     const mail = session?.user?.email;
 
-    if (!mail) {
-      return;
-    }
-
-    const user = await prisma.user.findUnique({ //user po mailu iz auth
-      where: {email: mail}
+    const user = await prisma.user.findUnique({
+      where: { email: mail! }
     });
 
-    if (!mail) {
-    return <div className="p-10 text-red-600">Niste prijavljeni.</div>;
-  }
+    if (!mail || !user) return null;
   
   const userPayments = await prisma.paymentIntents.findMany({
     where: {

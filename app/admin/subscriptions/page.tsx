@@ -2,6 +2,8 @@ import { prisma } from "@/app/lib/prisma";
 import {cancelSubscription} from "@/app/lib/subscriptions";
 import { redirect } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
 export default async function SubscriptionsPage() {
 
   const subscriptions = await prisma.subscriptions.findMany({

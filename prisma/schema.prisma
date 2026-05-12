@@ -21,6 +21,9 @@ model User { //ujedino i Customer
   lastName String?
   invoices  Invoice[] //dodano za racune pretplata!
   cards     paymentMethod[] //dodano za kartice!
+  IBAN      String?   @unique //dodano za SEPA/bank transfer simulaciju
+  Acc_bal   Int     @default(1000) //centi
+  transfers transfer[]
 }
 
 // koristiti ces i namjestiti kasnije (alenovi preporuceni), nisi jos apdejtao nis 
@@ -149,4 +152,15 @@ model RateLimit {
   userId      Int      @id
   count       Int      @default(0)
   windowStart DateTime @default(now())
+}
+
+model transfer{
+  id              Int      @id @default(autoincrement())
+  sender          User      @relation(fields: [senderId], references: [id])
+  senderId        Int
+  recipientIBAN   String    
+  amount          Int         //centi
+  fee             Int      @default(50)
+  createdAt       DateTime @default(now())
+  status          String   @default("failed")
 }

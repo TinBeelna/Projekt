@@ -3,6 +3,8 @@ import { prisma } from "@/app/lib/prisma";
 import PaymentMethodsClient from "./paymentmethodsclient";
 import { auth } from "@/app/lib/auth"
 
+export const dynamic = 'force-dynamic';
+
 export default async function PaymentMethodsPage() {
     const session = await auth();
     const email = session?.user?.email;

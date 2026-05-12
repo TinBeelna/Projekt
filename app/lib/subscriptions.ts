@@ -93,6 +93,8 @@ export async function requestSubscription(duration: Duration, currency: string) 
             currency: currency,
         });
         console.log('Postoji default: pretplata se radi automatski');
+        revalidatePath("/user/mysubscriptions");
+        revalidatePath("/admin/subscriptions");
     } else { 
         //koristi checkout session za napraviti subscription
         console.log('Ne postoji default kartica; ulazimo u checkout session.');
@@ -130,7 +132,7 @@ export async function requestSubscription(duration: Duration, currency: string) 
 export async function cancelSubscription(subId: string) {
     const subcription = await stripe.subscriptions.cancel(subId);
     revalidatePath("/admin/subscriptions");
-    revalidatePath("/user/subscriptions");
+    revalidatePath("/user/mysubscriptions");
 
 }
 
@@ -149,7 +151,7 @@ export async function cancelSubscriptionAtPeriodEnd(subId: string) {
         }
     });
 
-     revalidatePath("/user/subscriptions");
+     revalidatePath("/user/mysubscriptions");
      revalidatePath("/admin/subscriptions");
 }
 
@@ -173,7 +175,7 @@ export async function updateSubscription(subId: string, plan: Duration){
             plan: plan,
         }
     });
-    revalidatePath("/user/subscriptions"); 
+    revalidatePath("/user/mysubscriptions"); 
     revalidatePath("/admin/subscriptions");
     }
 

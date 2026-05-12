@@ -30,7 +30,7 @@ export async function capturePayment(paymentIntentId: string, amount: number, fu
     //   }
     // });
 
-    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/admin-dashboard");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };
@@ -50,7 +50,7 @@ export async function cancelPayment(paymentIntentId: string) {
         where: { id: Number(orderId) },
         data: { status: "Canceled" }
       });
-      revalidatePath("/admin/dashboard");
+      revalidatePath("/admin/admin-dashboard");
       return { success: true };
     }
 
@@ -63,7 +63,7 @@ export async function cancelPayment(paymentIntentId: string) {
       data: { status: "Canceled" }
     });
 
-    revalidatePath("/admin/dashboard");
+    revalidatePath("/admin/admin-dashboard");
     return { success: true };
   } catch (error: any) {
     //mici narudzbu makar baca error

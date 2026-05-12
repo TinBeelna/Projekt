@@ -1,6 +1,8 @@
 import { prisma } from "@/app/lib/prisma";
 import CaptureButtons from "@/app/components/AdminDashboardButtons";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboardPage() {
   const pendingOrders = await prisma.paymentIntents.findMany({
     where: { 
