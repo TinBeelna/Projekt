@@ -1,7 +1,6 @@
 
 import { revalidatePath } from "next/cache";
 import { stripe } from "@/app/lib/stripe";
-import { error } from "console";
 
 export async function listPayouts() {
 

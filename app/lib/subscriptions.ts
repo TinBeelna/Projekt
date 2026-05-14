@@ -43,7 +43,7 @@ export async function createCustomerPortal() {
     //stripe hosted billing page
     const portalSession = await stripe.billingPortal.sessions.create({
         customer: user.stripeId,
-        return_url: `http://localhost:3000/user/mysubscriptions`, // Where they go after fixing the card
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/mysubscriptions`, // Where they go after fixing the card
     });
 
     if (portalSession.url) {
@@ -108,8 +108,8 @@ export async function requestSubscription(duration: Duration, currency: string) 
         subscription_data: {
             //trial_period_days: 0,
         },
-        success_url: `http://localhost:3000/user/success?status=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `http://localhost:3000/user/success?status=cancel`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/success?status=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/success?status=cancel`,
         metadata: { //za webhook
             plan: duration,
             userEmail: userEmail || "unknown",

@@ -56,9 +56,9 @@ async function generateUniqueIBAN(): Promise<string> {
         }
         )
         if (!existing) return finalIBAN;
-    }
+
         throw new Error('IBAN vec postoji!!');
-    
+    }
 }
 
 //signup

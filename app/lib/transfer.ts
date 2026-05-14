@@ -61,7 +61,7 @@ export async function transferFundsSEPA(senderId: number, recipientIBAN: string,
             throw new Error("Nema dovoljno novca na racunu!!!");
         }
 
-        if (amount <= 100) {
+        if (amount < 100) {
             throw new Error("Iznos transfera je pre malen. Minimalni iznos je 1 euro.");
         }
 

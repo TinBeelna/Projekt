@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { stripe } from "../../lib/stripe";
-//import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
 import { prisma } from "app/lib/prisma";
 import { auth } from "@/app/lib/auth"
 import { checkRateLimit } from "app/lib/rateLimit";
@@ -80,7 +78,7 @@ export async function POST(req: Request) {
           },
         confirmation_method: 'automatic',
         confirm: true,
-        return_url: "http://localhost:3000/user/success",
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/success`,
 
         metadata: {
           orderId: newOrder.id.toString(),
@@ -121,7 +119,7 @@ export async function POST(req: Request) {
             userId: user.id.toString(),
             productName: itemName,
             invoiceId: newOrderInvoice.id, //dodano za rjesavanje errora kod invoice izrade!
-            return_url: "http://localhost:3000/user/success",
+            return_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/success`,
         },
         //capture_method: "manual",
         capture_method: (newOrder.items === "Novine" ? "automatic": "manual"), //u slucaju da se kupuju novine automatski se naplacuje
@@ -138,13 +136,6 @@ export async function POST(req: Request) {
         //status: "PENDING",
       },
     });
-
-    // await prisma.invoice.update({ //dodaj stripe ID za manual capture!
-    //   where: {id: newOrderInvoice.id},
-    //   data: {
-    //     status: "PENDING",
-    //   },
-    // });
 
     return NextResponse.json({ clientSecret: paymentIntent.client_secret, hasDefaultCard: false});
 
