@@ -104,7 +104,7 @@ export async function setupIntentForPaymentMethod(userId: string): Promise<{ cli
 
    const setupIntent = await stripe.setupIntents.create({
       customer: user.stripeId || undefined,
-      payment_method_types: ['card', 'google_pay', 'apple_pay'], //bonus task: + apple/google pay
+      payment_method_types: ['card'], //bonus task: + apple/google pay
       usage: 'off_session', //da se moze spremiti kartica bez checkouta
    })
    return { clientSecret: setupIntent.client_secret! };

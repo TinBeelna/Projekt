@@ -8,6 +8,7 @@ export default auth((request) => { //promjena iz cookies u auth!
     const { nextUrl } = request;
     const isPublicPage = pathname === '/' || pathname === '/register';
     const isAdminPage = pathname.startsWith('/admin'); //admin ruta
+    const isUserPage = pathname.startsWith('/user');
     const isRefundAdminPage = pathname.startsWith('/refundAdmin');
 
       // Dopusti Auth.js rute da prođu bez provjere
@@ -23,10 +24,17 @@ export default auth((request) => { //promjena iz cookies u auth!
         return NextResponse.next();
     }
 
-    // ako u keksima ne vidimo rolu ADMINa, salji osobu na next response (404)
+    // ako u keksima ne vidimo rolu ADMINa/USERa, salji osobu na next response (404)
     if (isAdminPage && userRole !== 'ADMIN') {
         //return NextResponse.next();
         return NextResponse.redirect(new URL('/not-found', request.url));
+    }
+
+    if (isUserPage && userRole !== 'USER') {
+        if (userRole === 'ADMIN') return NextResponse.redirect(new URL('/admin/admin-dashboard', request.url));
+        if (userRole === 'REFUNDADMIN') return NextResponse.redirect(new URL('/refundAdmin/refunds', request.url));
+        return NextResponse.redirect(new URL('/', request.url)); // unknown role
+
     }
 
     if (isRefundAdminPage && userRole !== 'REFUNDADMIN') {

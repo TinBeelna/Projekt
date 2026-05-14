@@ -1,5 +1,18 @@
 import { Revenue } from './definitions';
 
+export const currencySymbols: Record<string, string> = { usd: '$', eur: '€', gbp: '£' };
+
+export function convertPrice(amountEurCents: number, currency: string, rates: Record<string, number>): number {
+  const rate = rates[currency] || 1;
+  return Math.round((amountEurCents / 100) * rate * 100);
+}
+
+export function displayPrice(amountEurCents: number, currency: string, rates: Record<string, number>): string {
+  const rate = rates[currency] || 1;
+  const converted = (amountEurCents / 100) * rate;
+  return `${currencySymbols[currency]}${converted.toFixed(2)}`;
+}
+
 export const formatCurrency = (amount: number) => {
   return (amount / 100).toLocaleString('en-US', {
     style: 'currency',

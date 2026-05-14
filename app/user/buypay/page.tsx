@@ -4,6 +4,8 @@
 import React, { useState, useEffect } from "react";
 import CheckoutForm from "../../components/checkout";
 import { loadStripe } from "@stripe/stripe-js";
+import { useFXRates } from "@/app/lib/useFXRates";
+import { convertPrice, displayPrice } from "@/app/lib/utils";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
@@ -16,34 +18,9 @@ const [FXcurrency, setCurrency] = useState('eur'); //dodano za fx; eur kao stand
 const [hasDefaultCard, setDefaultCard] = useState<boolean | null>(null); //default payment 
 const [isAuthorizing, setIsAuthorizing] = useState<boolean>(false); //default payment 3ds handling
 const [rateLimitError, setRateLimitError] = useState<string | null>(null);
-const [rates, setRates] = useState<{ [key: string]: number}>({eur: 1, usd: 1.08, gbp: 0.85}); //default fallback fx
-const currencySymbols = {
-    usd: '$',
-    eur: '€',
-    gbp: '£'
-  };
+const rates = useFXRates();
 
-useEffect(() => { //lovljenje FX vrijednosti sa frankfurter stranice
-  const fetchRates = async () => {
-    try {
-
-      const res = await fetch("https://api.frankfurter.dev/"); //iz nekog razloga ova radi; .app i /latest ne
-      if (!res.ok) throw new Error("Network response was not ok");
-
-      const data = await res.json();
-      setRates(prev => ({
-      ...prev,
-      usd: data.rates?.USD ?? prev.usd,
-      gbp: data.rates?.GBP ?? prev.gbp,
-    }));
-    } catch (err) {
-      console.error("Neuspjesan dohvat FX vrijednosti sa frankfurter stranice: ", err);
-    }
-  };
-  fetchRates();
-}, []);
-
-React.useEffect(() => { //ZA RECOVERY
+useEffect(() => { //ZA RECOVERY
   const urlParams = new URLSearchParams(window.location.search);
   const secretFromUrl = urlParams.get("payment_intent_client_secret"); //pamti url i nakon refresha
 
@@ -51,23 +28,6 @@ React.useEffect(() => { //ZA RECOVERY
     setClientSecret(secretFromUrl); //ponovno checkoutform ako je refresh!
   }
 }, []); // "cim se stranica upali"
-
-const displayPrice = (amountEurCents: number) => {
-  const rate = rates[FXcurrency] || 1;
-  const converted = (amountEurCents / 100) * rate;
-  
-  // formatiranje u 2-decimalni broj sa znakom valute
-  return `${currencySymbols[FXcurrency as keyof typeof currencySymbols]}${converted.toFixed(2)}`;
-};
-
-const convertPrice = (amountEurCents: number) => {
-  const rate = rates[FXcurrency] || 1;
-  const converted = (amountEurCents / 100) * rate;
-  const rounded = Math.round(converted * 100)
-  
-  // formatiranje u 2-decimalni broj sa znakom valute
-  return rounded;
-};
 
 
 const initiatePayment = async (item: string, amount: number, currency: string) => {
@@ -187,19 +147,19 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
             {!clientSecret && (
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => initiatePayment("Novine", convertPrice(200), FXcurrency)}
+                  onClick={() => initiatePayment("Novine", convertPrice(200, FXcurrency, rates), FXcurrency)}
                   className="w-full flex justify-between items-center bg-white border-2 border-gray-200 hover:border-blue-500 text-gray-900 px-5 py-4 rounded-xl font-semibold text-sm transition group"
                 >
                   <span>Kupi novine</span>
-                  <span className="text-blue-600 font-bold">{displayPrice(200)}</span>
+                  <span className="text-blue-600 font-bold">{displayPrice(200, FXcurrency, rates)}</span>
                 </button>
 
                 <button
-                  onClick={() => initiatePayment("Knjiga", convertPrice(500), FXcurrency)}
+                  onClick={() => initiatePayment("Knjiga", convertPrice(500, FXcurrency, rates), FXcurrency)}
                   className="w-full flex justify-between items-center bg-white border-2 border-gray-200 hover:border-blue-500 text-gray-900 px-5 py-4 rounded-xl font-semibold text-sm transition group"
                 >
                   <span>Kupi knjigu</span>
-                  <span className="text-blue-600 font-bold">{displayPrice(500)}</span>
+                  <span className="text-blue-600 font-bold">{displayPrice(500, FXcurrency, rates)}</span>
                 </button>
               </div>
             )}

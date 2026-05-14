@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 //import { cookies } from "next/headers";
 import { auth } from "@/app/lib/auth";
+import { SELLERS } from "@/app/lib/sellers"
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,7 @@ export default async function PaymentsPage() {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Datum i vrijeme</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Izvor</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Proizvod</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Iznos (ukupno)</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Iznos (plaćen)</th>
@@ -64,6 +66,9 @@ export default async function PaymentsPage() {
                         })
                        : "-"}
                     </td>
+                  <td className="px-6 py-4 font-medium text-gray-900">
+                    {SELLERS.find(s => s.accountId === payment.sellerId)?.name ??  "Ova stranica"} 
+                  </td>
                   <td className="px-6 py-4 font-medium text-gray-900">
                     {payment.items || "Usluga"} 
                   </td>

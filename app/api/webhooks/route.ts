@@ -209,6 +209,24 @@ export async function POST(request: Request) {
                                     currency: refund.currency,
                                 } 
                             });
+
+                        const charge = refund as Stripe.Charge;
+                        const appFeeId = typeof charge.application_fee === 'string'
+                            ? charge.application_fee
+                            : charge.application_fee?.id;
+                        const appFeeAmount = charge.application_fee_amount;
+                        const appFeeCoefficient = refund.amount_refunded / refund.amount_captured;
+
+                        if (appFeeId && appFeeAmount !== null) {
+                            await prisma.applicationFee.update({
+                                where: {
+                                    stripeId: appFeeId,
+                                },
+                                data: {
+                                    amountRefunded: Math.round(refund.amount * appFeeCoefficient * 0.1),
+                                }
+                            });
+                        }
                     } catch (err) {
                         console.error('Error u charge.refunded webhooku: ', err);
                     }
@@ -660,8 +678,45 @@ export async function POST(request: Request) {
                         console.log(`Oduzet novac za dispute: ${dispute.id} u kolicini ${dispute.amount}`);
                     }
 
+                    case 'application_fee.created': {
+                        try {
+                            const fee = event.data.object as Stripe.ApplicationFee;
+                            const sellerId = typeof fee.account === 'string' ? fee.account : fee.account.id;
+                            const PaymentIntentId = typeof fee.originating_transaction === 'string'
+                                ? fee.originating_transaction
+                                : fee.originating_transaction?.id ?? (fee.charge as string);
+
+                            await prisma.applicationFee.create({
+                                data: {
+                                    stripeId: fee.id,
+                                    sellerId: sellerId,
+                                    amount: fee.amount,
+                                    currency: fee.currency,
+                                    IntentStripeId: PaymentIntentId,
+                                    createdAt: new Date(fee.created * 1000),
+                                },
+                            });
+                            console.log(`ApplicationFee upisan: ${fee.id} od sellera: ${sellerId}`);
+                        } catch (err) {
+                            console.error('Error tijekom application_fee.created webhooka:', err);
+                        }
+                    break;}
+
+                    case 'application_fee.refunded': {
+                        try {
+                            const fee = event.data.object as Stripe.ApplicationFee;
+                            await prisma.applicationFee.update({
+                                where: { stripeId: fee.id },
+                                data: { amountRefunded: fee.amount_refunded },
+                            });
+                            console.log(`ApplicationFee ${fee.id} refund webhook; vraceno: ${fee.amount_refunded}`);
+                        } catch (err) {
+                            console.error('Error tijekom application_fee.refunded webhooka:', err);
+                        }
+                    break;}
+
                 default: 
-                    console.log(`Primljen event: ${event.type}`);
+                    console.log(`Primljen event koji se ne obraduje: ${event.type}`);
             }
 
         } catch (error) {

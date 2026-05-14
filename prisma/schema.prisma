@@ -50,7 +50,8 @@ model paymentIntents {
   charges         charges[]
   disputes        disputes[]
   isPartial       Boolean?
-  partialPayId    String?                 //za partial capture i pretragu       
+  partialPayId    String?                 //za partial capture i pretragu    
+  sellerId        String?               //u slucaju da je marketplace item u pitanju   
 }
 
 model Webhook {
@@ -163,4 +164,15 @@ model transfer{
   fee             Int      @default(50)
   createdAt       DateTime @default(now())
   status          String   @default("failed")
+}
+
+model ApplicationFee{
+  id              Int         @id @default(autoincrement())
+  stripeId        String      @unique
+  sellerId        String
+  amount          Int
+  amountRefunded  Int         @default(0)
+  currency        String
+  IntentStripeId  String
+  createdAt       DateTime    @default(now())
 }

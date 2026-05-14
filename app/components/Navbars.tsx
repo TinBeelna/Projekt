@@ -42,6 +42,7 @@ export function AdminNavbar() {
         <NavLink href="/admin/refunds">🔄 Refunds</NavLink>
         <NavLink href="/admin/disputes">⚠️ Disputes</NavLink>
         <NavLink href="/admin/balance">💰 Balance & Payouts</NavLink>
+        <NavLink href="/admin/application-fee-earnings">💸 Application fee earnings</NavLink>
       </nav>
       <LogoutButton />
     </aside>
@@ -58,6 +59,7 @@ export function UserNavbar() {
       <nav className="flex flex-col gap-1 flex-1 p-3">
         <NavLink href="/user/user-dashboard">🏠 Dashboard</NavLink>
         <NavLink href="/user/buypay">🛒 Buy & Pay</NavLink>
+        <NavLink href="/user/marketplace-products"> 👠 Marketplace (3PS)</NavLink>
         <NavLink href="/user/payments">💳 Payments</NavLink>
         <NavLink href="/user/refunds">🔄 Refunds</NavLink>
         <NavLink href="/user/mysubscriptions">📋 My Subscriptions</NavLink>

@@ -1,3 +1,5 @@
+//skoro identican api kao za payment intent, uz dodatak sellerId (prisma db entry) te transferId/fee (Stripe fja)
+
 import { NextResponse } from "next/server";
 import { stripe } from "../../lib/stripe";
 //import { cookies } from "next/headers";
@@ -8,7 +10,7 @@ import { checkRateLimit } from "app/lib/rateLimit";
 
 export async function POST(req: Request) {
   try {
-    const { amount, itemName, currency } = await req.json();
+    const { amount, itemName, currency, sellerId} = await req.json(); //Dodan seller id
 
     //dodatak: preko keksica maila dobivam usera
     const session = await auth();
@@ -53,6 +55,7 @@ export async function POST(req: Request) {
         items: itemName,
         amount: amount,
         currency: currency,
+        sellerId: sellerId, //dodano za sellerid 
       }
     });
 
@@ -78,6 +81,10 @@ export async function POST(req: Request) {
               //request_multicapture: 'if_available',
             }
           },
+        transfer_data: {
+          destination: sellerId, // dodano
+        },
+        application_fee_amount: Math.round(amount * 0.1), // 10% fee
         confirmation_method: 'automatic',
         confirm: true,
         return_url: "http://localhost:3000/user/success",
@@ -86,7 +93,7 @@ export async function POST(req: Request) {
           orderId: newOrder.id.toString(),
           invoiceId: newOrderInvoice.id.toString(),
         },
-        capture_method: newOrder.items === "Novine" ? "automatic": "manual", //u slucaju da se kupuju novine automatski se naplacuje
+        capture_method: (newOrder.items === "Novine o poslovanju" || newOrder.items === "Novine o filozofiji") ? "automatic": "manual", //u slucaju da se kupuju novine automatski se naplacuje
 
       });
       console.log("Info o placanju:", { //za provjeru
@@ -115,6 +122,10 @@ export async function POST(req: Request) {
               //request_multicapture: 'if_available',
             }
           },
+        transfer_data: {
+          destination: sellerId, //Dodano
+        },
+        application_fee_amount: Math.round(amount * 0.1), // 10% fee
         payment_method_types: ['card'],
           metadata: {
             orderId: newOrder.id.toString(),
@@ -124,7 +135,7 @@ export async function POST(req: Request) {
             return_url: "http://localhost:3000/user/success",
         },
         //capture_method: "manual",
-        capture_method: (newOrder.items === "Novine" ? "automatic": "manual"), //u slucaju da se kupuju novine automatski se naplacuje
+        capture_method: (newOrder.items === "Novine o poslovanju" || newOrder.items === "Novine o filozofiji") ? "automatic" : "manual",
       },
       {
         idempotencyKey: crypto.randomUUID(), //idempotency!!!
