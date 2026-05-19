@@ -118,14 +118,6 @@ export async function registerUser(formData: FormData) {
         }
         throw err;
     }
- 
-
-//     if (newUser.role === 'ADMIN') {
-//   redirect(`/admin/admin-dashboard`);
-// } else {
-//   redirect(`/user/user-dashboard`);
-// }
-
 }
 
 //logout

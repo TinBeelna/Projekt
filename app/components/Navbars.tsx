@@ -43,6 +43,7 @@ export function AdminNavbar() {
         <NavLink href="/admin/disputes">⚠️ Disputes</NavLink>
         <NavLink href="/admin/balance">💰 Balance & Payouts</NavLink>
         <NavLink href="/admin/application-fee-earnings">💸 Application fee earnings</NavLink>
+        <NavLink href="/admin/user-provisions">💸 Transfer fee earnings</NavLink>
       </nav>
       <LogoutButton />
     </aside>

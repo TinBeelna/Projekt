@@ -100,7 +100,7 @@ export async function requestSubscription(duration: Duration, currency: string) 
         console.log('Ne postoji default kartica; ulazimo u checkout session.');
         const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
-        payment_method_types: ['card'], 
+        //maknuta linija payment methods --> prati se default sa dashboarda
         currency: currency,
         line_items: [{ price: priceId, quantity: 1 }],
         customer: user?.stripeId || undefined, 

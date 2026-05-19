@@ -18,6 +18,7 @@ const [FXcurrency, setCurrency] = useState('eur'); //dodano za fx; eur kao stand
 const [hasDefaultCard, setDefaultCard] = useState<boolean | null>(null); //default payment 
 const [isAuthorizing, setIsAuthorizing] = useState<boolean>(false); //default payment 3ds handling
 const [rateLimitError, setRateLimitError] = useState<string | null>(null);
+const [checkoutAmount, setCheckoutAmount] = useState<number | null>(null); //za apple/google pay
 const rates = useFXRates();
 
 useEffect(() => { //ZA RECOVERY
@@ -86,6 +87,7 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
     // "manual" flow ako nema default kartice    
     setClientSecret(clientSecret); //clientsecret da ga dobije checkoutform
     setIsAuthorizing(false); //mice se loading tekst
+    setCheckoutAmount(amount);
 
     const newUrl = `${window.location.pathname}?payment_intent_client_secret=${clientSecret}`; //update url za recovery
     window.history.pushState({}, '', newUrl);
@@ -165,7 +167,7 @@ const initiatePayment = async (item: string, amount: number, currency: string) =
             )}
 
             {/* Ako ne autoriziramo automatski i ako imamo clientsecret pprikaz checkout forme */}
-            {clientSecret && <CheckoutForm clientSecret={clientSecret} />} 
+            {clientSecret && <CheckoutForm clientSecret={clientSecret} amount = {checkoutAmount ?? undefined} currency={FXcurrency}/>} 
           </>
         )}
       </div>

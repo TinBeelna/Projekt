@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   PaymentElement,
   useStripe,
   useElements,
-  Elements
+  Elements,
+  PaymentRequestButtonElement //automatski daje apple i/ili google pay ako imamo registriranu karticu
 } from '@stripe/react-stripe-js';
-import { loadStripe, StripePaymentElementOptions } from '@stripe/stripe-js';
+import { loadStripe, StripePaymentElementOptions, PaymentRequest, PaymentRequestPaymentMethodEvent } from '@stripe/stripe-js';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
-function PaymentForm() {
+function PaymentForm({clientsecret, amount, currency}: { clientsecret?: string; amount?: number, currency?: string;}) { //Apple pay nije pametan kao paymentelement; treba mu dati info
   const stripe = useStripe();
   const elements = useElements();
 
@@ -98,9 +99,49 @@ function PaymentForm() {
       }
     });
   }, [stripe]);
+  //RECOVERY FLOW kraj
 
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [applePaymentRequest, setApplePaymentRequest] = useState<PaymentRequest | null>(null); //null ako je apple pay nedostupan u browseru
+  const [googlePaymentRequest, setGooglePaymentRequest] = useState<PaymentRequest | null>(null); //null ako je google pay nedostupan u browseru
+
+
+  //APPLE PAY useeffect
+  useEffect(() => {
+    if (!stripe || !amount || !currency) return; //ne ucitavaj ako nema infa
+
+    const pr = stripe.paymentRequest({ //payment request (kaze se appleu koji info dati kada user dobije face ID prompt) (+ google)
+      country: 'HR',
+      currency: currency.toLowerCase(),
+      total: { label: 'Plaćanje proizvoda', amount},
+      requestPayerName: false,
+      requestPayerEmail: false,
+    });
+
+    pr.canMakePayment().then((result) => { //set state ako je apple pay dostupan (+google)
+      console.log('canMakePayment result:', result);
+      if (result?.applePay) setApplePaymentRequest(pr);
+      if (result?.googlePay) setGooglePaymentRequest(pr);
+    });
+
+    pr.on('paymentmethod', 
+      async (e: PaymentRequestPaymentMethodEvent) => { //nakon apple/google pay autentikacije
+      if (!clientsecret) return;
+      const {error, paymentIntent} = await stripe.confirmCardPayment(
+        clientsecret,
+        { payment_method: e.paymentMethod.id}, //one-time payment token za placanje od applea/googlea
+      );
+      if (error) { //handleanje uspjeha/errora 
+        e.complete('fail');
+        setMessage(error.message ?? 'Plaćanje neuspjelo!!');
+      } else {
+        e.complete('success');
+        window.location.href = `/user/success?payment_intent=${paymentIntent!.id}`;
+      }
+    }
+  );
+  }, [stripe, amount, currency]) //rerun u slucaju promjerene
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,10 +172,29 @@ function PaymentForm() {
   };
 
   return (
+  <>
+    {/* Apple pay gumb */}
+    {applePaymentRequest && (
+      <>
+        <PaymentRequestButtonElement options={{ paymentRequest: applePaymentRequest }} />
+        <p className="text-center text-xs text-gray-400 my-3">ili platite karticom</p>
+      </>
+    )}
+    {/* Apple pay gumb */}
+
+    {/* Google pay gumb */}
+    {googlePaymentRequest && (
+      <>
+        <PaymentRequestButtonElement options={{ paymentRequest: googlePaymentRequest }} />
+        <p className="text-center text-xs text-gray-400 my-3">ili platite karticom</p>
+      </>
+    )}
+    {/* Google pay gumb */}
+
     <form id="payment-form" onSubmit={handleSubmit}>
       <PaymentElement id="payment-element" options={paymentElementOptions} />
-      <button 
-        disabled={isLoading || !stripe || !elements} 
+      <button
+        disabled={isLoading || !stripe || !elements}
         id="submit"
         className="mt-4 w-full bg-blue-600 text-white p-2 rounded disabled:opacity-50"
       >
@@ -145,21 +205,25 @@ function PaymentForm() {
       {}
       {message && <div id="payment-message" className="text-red-500 mt-2 text-sm">{message}</div>}
     </form>
-  );
+  </>
+);
+
 }
 
-interface CheckoutFormProps {
+interface CheckoutFormProps { // amount/currency dodani za apple/google pay
   clientSecret: string;
+  amount?: number;
+  currency?: string;
 }
 
-export default function CheckoutForm({ clientSecret }: CheckoutFormProps) {
+export default function CheckoutForm({ clientSecret, amount, currency }: CheckoutFormProps) {
   const appearance: { theme: 'stripe' } = {
     theme: 'stripe',
   };
 
   return (
     <Elements stripe={stripePromise} options={{ appearance, clientSecret }}>
-      <PaymentForm />
+      <PaymentForm clientsecret={clientSecret} amount = {amount} currency = {currency} />
     </Elements>
   );
 }

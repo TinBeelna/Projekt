@@ -79,11 +79,6 @@ export async function POST(request: Request) {
                             });
 
                         if (!existing) break;
-                        
-                        // if (existing.status === "Partially captured") {
-                        //     console.log("Vec je partially captured -> skip prepisa u db.");
-                        //     break;
-                        //     }
 
                             const dbIntent = await prisma.paymentIntents.update({
                                     where: { id: orderId},

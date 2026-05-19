@@ -16,6 +16,7 @@ export default function MarketplaceProductsPage() {
     const [hasDefaultCard, setDefaultCard] = useState<boolean | null>(null); //default payment 
     const [isAuthorizing, setIsAuthorizing] = useState<boolean>(false); //default payment 3ds handling
     const [rateLimitError, setRateLimitError] = useState<string | null>(null);
+    const [checkoutAmount, setCheckoutAmount] = useState<number | null>(null); //za apple pay
     const rates = useFXRates(); 
 
     useEffect(() => { //ZA RECOVERY
@@ -83,6 +84,7 @@ export default function MarketplaceProductsPage() {
             // manual flow ako nema default kartice
             setClientSecret(clientSecret);
             setIsAuthorizing(false);
+            setCheckoutAmount(amount);
 
             const newUrl = `${window.location.pathname}?payment_intent_client_secret=${clientSecret}`;
             window.history.pushState({}, '', newUrl);
@@ -139,7 +141,7 @@ export default function MarketplaceProductsPage() {
               </div>
             ))}
 
-            {clientSecret && <CheckoutForm clientSecret={clientSecret} />}
+            {clientSecret && <CheckoutForm clientSecret={clientSecret} amount = {checkoutAmount ?? undefined} currency = {FXcurrency}/>}
           </>
         )}
       </div>
