@@ -9,6 +9,12 @@ export default async function UserProvisionsPage() {
     include: { sender: { select: { email: true } } },
   });
 
+  const successfulTransfers = await prisma.transfer.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: { sender: { select: { email: true } } },
+    where: {status: "succeeded" },
+  });
+
   const recipientIBANs = transfers.map(t => t.recipientIBAN);
   const recipients = await prisma.user.findMany({
     where: { 
@@ -23,7 +29,7 @@ export default async function UserProvisionsPage() {
   });
   const recipientMap = Object.fromEntries(recipients.map(r => [r.IBAN, r]));
 
-  const totalEarnedCents = transfers.length * 50;
+  const totalEarnedCents = successfulTransfers.length * 50;
 
   return (
     <div className="p-8 space-y-10">
