@@ -59,6 +59,5 @@ export default auth((request) => { //promjena iz cookies u auth!
 
 //na sta se ne odnosi middleware (javne rute)
 export const config = {
-        matcher: ['/((?!api/auth|api/webhook|_next/static|_next/image|favicon.ico).*)'],
-
+    matcher: ['/((?!api/auth|api/webhook|api/bank|_next/static|_next/image|favicon.ico).*)'],
 };

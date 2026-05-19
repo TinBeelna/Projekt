@@ -72,7 +72,7 @@ export default function TransferForm({ action }: { action: (formData: FormData) 
 
   return ( //forma za unos ibana/amounta
     <div className="bg-white border rounded-xl p-6 space-y-4">
-      <h2 className="text-lg font-bold text-gray-900">Novi SEPA Transfer</h2>
+      <h2 className="text-lg font-bold text-gray-900">Novi SEPA Transfer (košta 50 centi)</h2>
       <div className="space-y-3">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">IBAN primatelja</label>

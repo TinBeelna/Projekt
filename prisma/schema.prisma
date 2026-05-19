@@ -164,6 +164,8 @@ model transfer{
   fee             Int      @default(50)
   createdAt       DateTime @default(now())
   status          String   @default("failed")
+  pain001Xml      String?   //ISO koji se salje banci (initiation)
+  pain002Xml      String?   //ISO koji se prima od banke (status report)
 }
 
 model ApplicationFee{
