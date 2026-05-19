@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) { //prima pain.001, daje nazad pain
 // GrpHdr: bankin messageId, ACK acknowledgement + timestamp kada ga je banka napravila
 // OrgnlMsgId je Id pain.002 koji smo slali
 //GrpSts ACCP kaze da potvrdujemo narudzbu; moze biti i RJCT (rejected) i PDNG (pending)
-//pain 001 001 09 --> pain (payment initiation) 001 (payment initiation; message number) 001 (variant 1) 09 (version 9, zadnja revizija)
-//pain 002 001 10 --> pain (payment initiation) 002 (message number: payment status report) 001 (variant 1) 10 (version 10, zadnja revizija)
+//pain 001 001 09 --> pain (payment initiation) 001 (message identifier; credit transfer initiation) 001 (variant 1; sub-type) 09 (version 9, zadnja revizija sheme)
+//pain 002 001 10 --> pain (payment initiation) 002 (message number: payment status report) 001 (variant 1; standardni sub-type) 10 (version 10, zadnja revizija sheme )
 return new NextResponse(pain002Xml, {
     headers: { 'Content-Type': 'application/xml' }
 })

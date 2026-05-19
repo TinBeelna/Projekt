@@ -38,7 +38,7 @@ export default async function UserProvisionsPage() {
       <div className="bg-white border rounded-xl p-6">
         <p className="text-sm text-gray-500 uppercase font-semibold tracking-wide">Ukupna zarada od podržavanja SEPA instant debit transfera (naknade)</p>
         <p className="text-4xl font-bold text-gray-900 mt-1">{(totalEarnedCents / 100).toFixed(2)} EUR</p>
-        <p className="text-sm text-gray-400 mt-1">{transfers.length} transfera × 0.50 EUR</p>
+        <p className="text-sm text-gray-400 mt-1">{successfulTransfers.length} transfera × 0.50 EUR</p>
       </div>
       {/* ALL TRANSFERS */}
 <div>
