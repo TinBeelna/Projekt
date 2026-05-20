@@ -4,15 +4,14 @@ export const dynamic = 'force-dynamic';
 
 export default async function UsersPage() {
 
-  const users = await prisma.user.findMany({ 
-    where: {
-      role: {
-        in: ["USER", "REFUNDADMIN"]
-      },
-    },
-    orderBy: {
-      id: "asc"
-    }
+  const nonAdminConfigs = await prisma.roleRouteConfig.findMany({
+    where: { NOT: { routePrefix: '/admin' } }
+  });
+  const nonAdminRoles = nonAdminConfigs.map(c => c.role);
+
+  const users = await prisma.user.findMany({
+    where: { role: { in: nonAdminRoles } },
+    orderBy: { id: "asc" }
   })
 
   return(

@@ -1,7 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 //import { cookies } from "next/headers";
 import { auth } from "@/app/lib/auth";
-import { SELLERS } from "@/app/lib/sellers"
+import { getSellers } from "@/app/lib/sellers"
 
 export const dynamic = 'force-dynamic';
 
@@ -16,14 +16,13 @@ export default async function PaymentsPage() {
 
     if (!mail || !user) return null;
   
-  const userPayments = await prisma.paymentIntents.findMany({
-    where: {
-      email: mail
-    },
-    orderBy: {
-      id: 'desc'
-    },
-  });
+  const [userPayments, sellers] = await Promise.all([
+    prisma.paymentIntents.findMany({
+      where: { email: mail },
+      orderBy: { id: 'desc' },
+    }),
+    getSellers(),
+  ]);
 
   return (
     <div className="p-8">
@@ -67,7 +66,7 @@ export default async function PaymentsPage() {
                        : "-"}
                     </td>
                   <td className="px-6 py-4 font-medium text-gray-900">
-                    {SELLERS.find(s => s.accountId === payment.sellerId)?.name ??  "Ova stranica"} 
+                    {sellers.find(s => s.stripeAccountId === payment.sellerId)?.name ?? "Ova stranica"}
                   </td>
                   <td className="px-6 py-4 font-medium text-gray-900">
                     {payment.items || "Usluga"} 

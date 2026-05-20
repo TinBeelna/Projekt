@@ -1,12 +1,13 @@
-import { prisma } from "app/lib/prisma";
-
-const WINDOW_MS = 15 * 60 * 1000; // 15 minuta
-const MAX_REQUESTS = 10; //broj requestova moguc u WINDOW_MS intervalu
+import { prisma } from "@/app/lib/prisma";
 
 export async function checkRateLimit(
   userId: number
 ): Promise<{ allowed: boolean; retryAfter?: number }> {
   const now = new Date();
+
+  const config = await prisma.appConfig.findUnique({ where: { id: 1 } });
+  const WINDOW_MS = config?.rateLimitWindowMs ?? 900000;
+  const MAX_REQUESTS = config?.rateLimitMaxRequests ?? 10;
 
   const record = await prisma.rateLimit.findUnique({ where: { userId } });
 

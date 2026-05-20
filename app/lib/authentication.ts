@@ -13,25 +13,26 @@ export async function isAdmin() {
         where: { email }
     })
 
-    if(!user || user.role !== 'ADMIN') {
-        //redirect('user-dashboard?error=Unauthorized'); //ako nije admin, vrati na user dashboard
-        notFound(); //error 404 custom stranica
+    const adminConfig = await prisma.roleRouteConfig.findFirst({ where: { routePrefix: '/admin' } });
+    if(!user || user.role !== adminConfig?.role) {
+        notFound();
     }
-    return user; //ako je sve ok vrati usera
+    return user;
 }
 
 export async function isRefundAdmin() {
     const session = await auth();
     const email = session?.user?.email;
 
-    if(!email) return null; //ako nema emaila u auth, vrati null
+    if(!email) return null;
 
     const user = await prisma.user.findUnique({
         where: { email }
     })
 
-    if(!user || user.role !== 'REFUNDADMIN') {
-        notFound(); //error 404 custom stranica
+    const refundAdminConfig = await prisma.roleRouteConfig.findFirst({ where: { routePrefix: '/refundAdmin' } });
+    if(!user || user.role !== refundAdminConfig?.role) {
+        notFound();
     }
-    return user; //ako je sve ok vrati usera
+    return user;
 }

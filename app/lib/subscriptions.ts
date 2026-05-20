@@ -7,21 +7,6 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/app/lib/auth"
 
 
-// const PRICE_IDS_EUR = { //cijene, ali samo u eurima
-//   weekly: "price_1TBtA6LrpwzLPald0XAcYc2W",
-//   monthly: "price_1TBtA6LrpwzLPalde3oLQBid",
-//   three_months: "price_1TBtA6LrpwzLPald60ILheZK",
-//   yearly: "price_1TBtA6LrpwzLPalduovKrRMV",
-// };
-
-const PRICE_IDS = { //dodane cijene sa USD/GBP opcijom
-    weekly: "price_1TMRnMLrpwzLPaldmyHxqgit",
-    monthly: "price_1TMRoJLrpwzLPald4W0VQ3vT",
-    three_months: "price_1TMRpSLrpwzLPaldIm8Hg6di",
-    yearly: "price_1TMRq6LrpwzLPaldAYHeVL2e",
-}
-
-type Duration = keyof typeof PRICE_IDS;
 
 //za update kartice (u slucaju faila)
 export async function createCustomerPortal() {
@@ -52,8 +37,10 @@ export async function createCustomerPortal() {
 }
 
 
-export async function requestSubscription(duration: Duration, currency: string) {
-    const priceId = PRICE_IDS[duration];
+export async function requestSubscription(duration: string, currency: string) {
+    const plan = await prisma.subscriptionPlan.findFirst({ where: { duration } });
+    if (!plan) throw new Error(`Plan "${duration}" nije pronađen u bazi.`);
+    const priceId = plan.stripePriceId;
     const session = await auth();
     const userEmail = session?.user?.email;
 
@@ -155,9 +142,11 @@ export async function cancelSubscriptionAtPeriodEnd(subId: string) {
      revalidatePath("/admin/subscriptions");
 }
 
-export async function updateSubscription(subId: string, plan: Duration){
+export async function updateSubscription(subId: string, plan: string){
 
-    const newPriceId = PRICE_IDS[plan];
+    const planRecord = await prisma.subscriptionPlan.findFirst({ where: { duration: plan } });
+    if (!planRecord) throw new Error(`Plan "${plan}" nije pronađen u bazi.`);
+    const newPriceId = planRecord.stripePriceId;
     const subscription = await stripe.subscriptions.retrieve(subId);
     const itemId = subscription.items.data[0].id; //zadnja
 

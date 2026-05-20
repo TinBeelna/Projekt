@@ -1,5 +1,5 @@
 import { prisma } from "@/app/lib/prisma"
-import { SELLERS } from "@/app/lib/sellers"
+import { getSellers } from "@/app/lib/sellers"
 import { getAccFeeEarningsInCurr } from "@/app/lib/fee"
 
 export const dynamic = 'force-dynamic';
@@ -9,13 +9,14 @@ const formatCurrency = (cents: number, currency: string) =>
 
 export default async function ApplicationFeeEarningsPage() {
 
-    const [totalEUR, totalGBP, totalUSD, allAppFees] = await Promise.all([
+    const [totalEUR, totalGBP, totalUSD, allAppFees, sellers] = await Promise.all([
         getAccFeeEarningsInCurr("eur"),
         getAccFeeEarningsInCurr("gbp"),
         getAccFeeEarningsInCurr("usd"),
         prisma.applicationFee.findMany({
             orderBy: { createdAt: 'desc' },
         }),
+        getSellers(),
     ])
 
     return (
@@ -53,7 +54,7 @@ export default async function ApplicationFeeEarningsPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {allAppFees.map((fee) => {
-                            const seller = SELLERS.find(s => s.accountId === fee.sellerId);
+                            const seller = sellers.find(s => s.stripeAccountId === fee.sellerId);
                             return (
                                 <tr key={fee.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{seller?.name ?? fee.sellerId}</td>

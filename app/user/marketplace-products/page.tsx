@@ -5,28 +5,35 @@ import CheckoutForm from "../../components/checkout";
 import { loadStripe } from "@stripe/stripe-js";
 import { useFXRates } from "@/app/lib/useFXRates";
 import { convertPrice, displayPrice} from "@/app/lib/utils";
-import { SELLERS } from "@/app/lib/sellers"
+import { SellerWithProducts } from "@/app/lib/sellers";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
 export default function MarketplaceProductsPage() {
 
+    const [sellers, setSellers] = useState<SellerWithProducts[]>([]);
     const [clientSecret, setClientSecret] = useState<string>("");
     const [FXcurrency, setCurrency] = useState('eur'); //dodano za fx; eur kao standardna
-    const [hasDefaultCard, setDefaultCard] = useState<boolean | null>(null); //default payment 
+    const [hasDefaultCard, setDefaultCard] = useState<boolean | null>(null); //default payment
     const [isAuthorizing, setIsAuthorizing] = useState<boolean>(false); //default payment 3ds handling
     const [rateLimitError, setRateLimitError] = useState<string | null>(null);
     const [checkoutAmount, setCheckoutAmount] = useState<number | null>(null); //za apple pay
-    const rates = useFXRates(); 
+    const rates = useFXRates();
 
     useEffect(() => { //ZA RECOVERY
       const urlParams = new URLSearchParams(window.location.search);
       const secretFromUrl = urlParams.get("payment_intent_client_secret"); //pamti url i nakon refresha
-    
+
       if (secretFromUrl) { //ako nema secreta korisnik je tek dosao
         setClientSecret(secretFromUrl); //ponovno checkoutform ako je refresh!
       }
-    }, []); // "cim se stranica upali"
+    }, []);
+
+    useEffect(() => {
+      fetch('/api/sellers')
+        .then(res => res.json())
+        .then(data => setSellers(data));
+    }, []);
 
     const initiatePayment = async (item: string, amount: number, currency: string, sellerId: string) => {
         setIsAuthorizing(true);
@@ -125,16 +132,16 @@ export default function MarketplaceProductsPage() {
               </div>
             )}
 
-            {!clientSecret && SELLERS.map((seller) => (
-              <div key={seller.accountId}>
+            {!clientSecret && sellers.map((seller) => (
+              <div key={seller.stripeAccountId}>
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-2">{seller.name}</p>
                 <div className="flex flex-col gap-3">
                   {seller.products.map((product) => (
                     <button key={product.name}
-                      onClick={() => initiatePayment(product.name, convertPrice(product.priceEurCents, FXcurrency, rates), FXcurrency, seller.accountId)}
+                      onClick={() => initiatePayment(product.name, convertPrice(product.priceInCents, FXcurrency, rates), FXcurrency, seller.stripeAccountId)}
                       className="w-full flex justify-between items-center bg-white border-2 border-gray-200 hover:border-blue-500 text-gray-900 px-5 py-4 rounded-xl font-semibold text-sm transition">
                       <span>{product.name}</span>
-                      <span className="text-blue-600 font-bold">{displayPrice(product.priceEurCents, FXcurrency, rates)}</span>
+                      <span className="text-blue-600 font-bold">{displayPrice(product.priceInCents, FXcurrency, rates)}</span>
                     </button>
                   ))}
                 </div>

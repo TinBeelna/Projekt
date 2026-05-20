@@ -2,64 +2,25 @@
 import React from "react";
 import { requestSubscription, updateSubscription, cancelSubscriptionAtPeriodEnd, cancelSubscription, createCustomerPortal} from "@/app/lib/subscriptions";
 import { useRouter } from "next/navigation";
-import { createPortal } from "react-dom";
+import { useFXRates, } from "@/app/lib/useFXRates";
+import { displayPrice } from "@/app/lib/utils";
 
-export default function SubscriptionButtons({ activeSubId, currentPlan, status, cancelAtPeriodEnd, endDate }: { activeSubId?: string, currentPlan?: string, status?: string, cancelAtPeriodEnd: boolean, endDate?: Date }) {
+type Plan = { duration: string; label: string; weight: number; priceEur: number | null; };
+
+export default function SubscriptionButtons({ activeSubId, currentPlan, status, cancelAtPeriodEnd, endDate, plans }: { activeSubId?: string, currentPlan?: string, status?: string, cancelAtPeriodEnd: boolean, endDate?: Date, plans: Plan[] }) {
   const router = useRouter();
+  const rates = useFXRates();
 
-  const plans = [
-    { id: 'weekly',
-      label: 'Tjedno', 
-      price:{
-        eur: 1.5,
-        gbp: 1.30,
-        usd: 1.77
-     }, 
-      weight: 1 
-    },
-    { id: 'monthly',
-      label: 'Mjesečno', 
-      price:{
-        eur: 5,
-        gbp: 4.35,
-        usd: 5.89
-     }, 
-      weight: 2 
-    },
-    { id: 'three_months',
-      label: '3-mjesečno', 
-      price:{
-        eur: 13.5,
-        gbp: 11.74,
-        usd: 15.90
-     }, 
-      weight: 3
-    },
-    { id: 'yearly',
-      label: 'Godišnje', 
-      price:{
-        eur: 50,
-        gbp: 43.46,
-        usd: 58.88
-     }, 
-      weight: 4
-    },
-  ];
-
-  // 1. Nađemo težinu trenutnog plana
-  const currentWeight = plans.find(p => p.id === currentPlan)?.weight || 0;
-  
-  // 2. Filtriramo: makni planove koji su ISTI kao trenutni
-  const otherPlans = plans.filter(p => p.id !== currentPlan);
-
-  // 3. Razvrstaj u Upgrade i Downgrade
+  const currentWeight = plans.find(p => p.duration === currentPlan)?.weight || 0;
+  const otherPlans = plans.filter(p => p.duration !== currentPlan);
   const upgrades = otherPlans.filter(p => p.weight > currentWeight);
   const downgrades = otherPlans.filter(p => p.weight < currentWeight);
 
-  const [selectedCurrency, setSelectedCurrency] = React.useState("eur"); //dodano za odabir valute
+  const [selectedCurrency, setSelectedCurrency] = React.useState("eur");
 
-  const getPrice = (plan: typeof plans[0]) => { //dodatna funkcija za odabir prikazane cijene
-    return plan.price[selectedCurrency as keyof typeof plan.price] || plan.price.eur;
+  const getPrice = (plan: Plan) => {
+    if (plan.priceEur == null) return "?";
+    return displayPrice(Math.round(plan.priceEur * 100), selectedCurrency, rates);
   };
 
   return (
@@ -148,12 +109,12 @@ export default function SubscriptionButtons({ activeSubId, currentPlan, status, 
 
           {upgrades.map((plan) => (
             <button
-              key={plan.id}
-              onClick={() => updateSubscription(activeSubId, plan.id as any)}
+              key={plan.duration}
+              onClick={() => updateSubscription(activeSubId, plan.duration as any)}
               className="w-full flex justify-between items-center p-4 bg-white border-2 border-green-50 rounded-xl hover:border-green-500 transition shadow-sm group"
             >
               <span className="font-bold text-gray-800">
-                {plan.label} {getPrice(plan)} {selectedCurrency.toUpperCase()}
+                {plan.label} {getPrice(plan)}
               </span>
               <span className="bg-green-500 text-white text-[10px] px-3 py-1 rounded-lg font-black group-hover:scale-105 transition uppercase">
                 : Nadogradi
@@ -172,12 +133,12 @@ export default function SubscriptionButtons({ activeSubId, currentPlan, status, 
 
     {downgrades.map((plan) => (
         <button
-          key={plan.id}
-          onClick={() => updateSubscription(activeSubId, plan.id as any)}
+          key={plan.duration}
+          onClick={() => updateSubscription(activeSubId, plan.duration as any)}
           className="w-full flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl hover:border-gray-400 transition group"
         >
           <span className="font-medium text-gray-500">
-            {plan.label} {getPrice(plan)} {selectedCurrency.toUpperCase()}
+            {plan.label} {getPrice(plan)}
           </span>
           <span className="bg-gray-100 text-gray-500 text-[10px] px-3 py-1 rounded-lg font-black group-hover:bg-gray-200 transition uppercase">
             : Smanji
@@ -196,14 +157,14 @@ export default function SubscriptionButtons({ activeSubId, currentPlan, status, 
 
           {plans.map((plan) => (
             <button 
-              key={plan.id}
-              // Proslijeđujemo i plan.id i odabranu valutu
-              onClick={() => requestSubscription(plan.id as any, selectedCurrency)}
+              key={plan.duration}
+              // Proslijeđujemo i plan.duration i odabranu valutu
+              onClick={() => requestSubscription(plan.duration as any, selectedCurrency)}
               className="flex justify-between items-center p-6 border-2 border-gray-100 rounded-3xl hover:border-blue-600 bg-white transition shadow-sm group text-left"
             >
               <div className="font-bold text-lg">{plan.label}</div>
               <div className="text-xl font-black">
-                {getPrice(plan)} <span className="text-sm uppercase text-blue-600">{selectedCurrency}</span>
+                {getPrice(plan)}
               </div>
             </button>
           ))}

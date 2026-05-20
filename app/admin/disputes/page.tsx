@@ -120,10 +120,15 @@ export default function DisputeSection({ stripeId }: { stripeId: string }) {
                 /* READ ONLY VIEW FOR FINALIZED DISPUTES */
                 <div className="mt-2 text-sm text-gray-600 border-t border-gray-300 pt-3 flex flex-col gap-2">
                   <div className="flex items-center gap-2 font-medium">
-                    <span className={`h-2 w-2 rounded-full ${dispute.status === 'won' ? 'bg-green-500' : 'bg-gray-400'}`}></span> 
-                    {dispute.status === 'under_review' 
-                      ? "Evidence submitted. Awaiting bank decision." 
-                      : `Finalized: ${dispute.status}.`}
+                    <span
+                      className="h-2 w-2 rounded-full inline-block"
+                      style={{ backgroundColor: dispute.status === 'won' ? '#22c55e' : dispute.status === 'lost' ? '#ef4444' : '#9ca3af' }}
+                    />
+                    <span style={{ color: dispute.status === 'won' ? '#22c55e' : dispute.status === 'lost' ? '#ef4444' : '#9ca3af' }}>
+                      {dispute.status === 'under_review'
+                        ? "Evidence submitted. Awaiting bank decision."
+                        : `Finalized: ${dispute.status}.`}
+                    </span>
                   </div>
                   {dispute.evidence && (
                     <div className="mt-2 text-sm text-gray-600 border-t border-gray-300 pt-3 flex flex-col gap-2">

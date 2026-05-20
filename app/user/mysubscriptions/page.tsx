@@ -39,6 +39,10 @@ export default async function MySubscriptionsPage() {
   const endDate = latestInvoice?.periodEnd;
   const isCancelScheduled = activeSubscriptions[0]?.cancelAtPeriodEnd;
 
+  const plans = await prisma.subscriptionPlan.findMany({
+    where: { active: true },
+    orderBy: { weight: 'asc' },
+  });
 
   return (
     <div className="p-8 max-w-3xl space-y-8">
@@ -74,12 +78,13 @@ export default async function MySubscriptionsPage() {
       <section>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Otkazivanje pretplata:</h2>
 
-        <SubscriptionButtons 
+        <SubscriptionButtons
           activeSubId={latestSubId}
           currentPlan={latestSubPlan}
           status={activeSubscriptions[0]?.status}
           cancelAtPeriodEnd={isCancelScheduled}
           endDate={endDate as Date}
+          plans={plans}
         />
 
         {/* cancel status info*/}

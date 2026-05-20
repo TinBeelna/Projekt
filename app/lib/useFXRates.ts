@@ -17,6 +17,15 @@ export function useFXRates() {
         }));
       } catch (err) {
         console.error("Neuspjesan dohvat FX vrijednosti sa frankfurter stranice: ", err);
+        try {
+          const fallback = await fetch("/api/currency-rates");
+          if (fallback.ok) {
+            const dbRates = await fallback.json();
+            setRates(dbRates);
+          }
+        } catch (dbErr) {
+          console.error("DB fallback rate fetch failed:", dbErr);
+        }
       }
     };
     fetchRates();

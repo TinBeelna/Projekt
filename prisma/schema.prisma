@@ -78,10 +78,11 @@ model paymentMethod {
 model subscriptions{
   stripePaymentId String  @unique
   plan            String          //mjesec, godina...
-  userStripeId    String 
+  modelName       String  @default("Novine")
+  userStripeId    String
   status          String  @default("active")
   currency        String  @default("eur")
-  invoices        Invoice[] 
+  invoices        Invoice[]
   cancelAtPeriodEnd Boolean @default(false)
 }
 
@@ -149,6 +150,25 @@ model disputes{
   amount            Int?               @default(0)
 }
 
+model AppConfig {
+  id                   Int @id @default(1)
+  minTransferCents     Int @default(100)
+  rateLimitWindowMs    Int @default(900000)
+  rateLimitMaxRequests Int @default(10)
+}
+
+model CurrencyRate {
+  currency    String @unique  // "eur", "usd", "gbp"
+  coefficient Float           // multiplier from EUR (eur=1, usd=1.08, gbp=0.85)
+}
+
+model RoleRouteConfig {
+  id          Int    @id @default(autoincrement())
+  role        String @unique   // "ADMIN", "USER", "REFUNDADMIN"
+  routePrefix String           // "/admin", "/user", "/refundAdmin"
+  homeRoute   String           // where to redirect after login
+}
+
 model RateLimit {
   userId      Int      @id
   count       Int      @default(0)
@@ -179,4 +199,41 @@ model ApplicationFee{
   currency        String
   IntentStripeId  String
   createdAt       DateTime    @default(now())
+}
+
+model Seller {
+  id                    Int         @id @default(autoincrement())
+  name                  String
+  stripeAccountId       String      @unique
+  ApplicationFeePercent Float       @default(10)
+  products              Product[]
+}
+
+model Product {
+  id                    Int         @id @default(autoincrement())
+  name                  String
+  priceInCents          Int
+  captureMethod         String      @default("manual")
+  active                Boolean     @default(true)
+  seller                Seller      @relation(fields: [sellerId], references: [id])
+  sellerId              Int
+}
+
+model SubscriptionModel {
+  id        Int                @id @default(autoincrement())
+  name      String             @unique
+  active    Boolean            @default(true)
+  plans     SubscriptionPlan[]
+}
+
+model SubscriptionPlan {
+  id            Int               @id @default(autoincrement())
+  duration      String
+  label         String
+  stripePriceId String            @unique
+  priceEur      Float?
+  weight        Int               //za up/downgrade
+  active        Boolean           @default(true)
+  model         SubscriptionModel @relation(fields: [modelId], references: [id])
+  modelId       Int
 }

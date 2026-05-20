@@ -67,6 +67,14 @@ export async function POST(req: Request) {
       }
     });
 
+    const seller = await prisma.seller.findUnique({
+      where: { stripeAccountId: sellerId },
+      include: { products: { where: { name: itemName } } },
+    });
+    const feePercent = seller?.ApplicationFeePercent ?? 10;
+    const applicationFeeAmount = Math.round(amount * feePercent / 100);
+    const captureMethod = (seller?.products[0]?.captureMethod ?? 'manual') as 'automatic' | 'manual';
+
     if (defaultCard) { //flow ako ima default karticu
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
@@ -82,7 +90,7 @@ export async function POST(req: Request) {
         transfer_data: {
           destination: sellerId, // dodano
         },
-        application_fee_amount: Math.round(amount * 0.1), // 10% fee
+        application_fee_amount: applicationFeeAmount,
         confirmation_method: 'automatic',
         confirm: true,
         return_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/success`,
@@ -91,7 +99,7 @@ export async function POST(req: Request) {
           orderId: newOrder.id.toString(),
           invoiceId: newOrderInvoice.id.toString(),
         },
-        capture_method: (newOrder.items === "Novine o poslovanju" || newOrder.items === "Novine o filozofiji") ? "automatic": "manual", //u slucaju da se kupuju novine automatski se naplacuje
+        capture_method: captureMethod,
 
       });
       console.log("Info o placanju:", { //za provjeru
@@ -123,7 +131,7 @@ export async function POST(req: Request) {
         transfer_data: {
           destination: sellerId, //Dodano
         },
-        application_fee_amount: Math.round(amount * 0.1), // 10% fee
+        application_fee_amount: applicationFeeAmount,
         payment_method_types: ['card'],
           metadata: {
             orderId: newOrder.id.toString(),
@@ -133,7 +141,7 @@ export async function POST(req: Request) {
             return_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/success`,
         },
         //capture_method: "manual",
-        capture_method: (newOrder.items === "Novine o poslovanju" || newOrder.items === "Novine o filozofiji") ? "automatic" : "manual",
+        capture_method: captureMethod,
       },
       {
         idempotencyKey: crypto.randomUUID(), //idempotency!!!

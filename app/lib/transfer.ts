@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import { stripe } from "./stripe";
 import { ISO20022 } from "iso20022.js"
 
+const Fee = 50; //samo je jedan; neka bude hard kodiran :)
+
 function generatePain001(
     sender: {
         id: number;
@@ -141,11 +143,13 @@ export async function transferFundsSEPA(senderId: number, recipientIBAN: string,
             throw new Error("Nema sendera/receivera sa tim ID-em!");
         }
 
-        if (sender.Acc_bal < amount + 50) {
+        if (sender.Acc_bal < amount + Fee) {
             throw new Error("Nema dovoljno novca na racunu!!!");
         }
 
-        if (amount < 100) {
+        const appConfig = await prisma.appConfig.findUnique({ where: { id: 1 } });
+        const minTransferCents = appConfig?.minTransferCents ?? 100;
+        if (amount < minTransferCents) {
             throw new Error("Iznos transfera je pre malen. Minimalni iznos je 1 euro.");
         }
 
@@ -165,7 +169,7 @@ export async function transferFundsSEPA(senderId: number, recipientIBAN: string,
             }
         });
     
-        const BaseUrl = 'http://localhost:3000/';
+        const BaseUrl = process.env.BASE_URL ?? 'http://localhost:3000';
 
         const bankResponse = await fetch(`${BaseUrl}/api/bank_1`, { //salji pain.001 banci
             method: 'POST',
@@ -187,7 +191,7 @@ export async function transferFundsSEPA(senderId: number, recipientIBAN: string,
         }
 
         const charge = await stripe.charges.create({ //simulira se naplata sa sender kartice da dobijemo novac tokom transfera
-        amount: 50, 
+        amount: Fee, 
         currency: 'eur',
         source: 'tok_bypassPending', //test token koji uvijek prode
         description: 'Charge for SEPA transfer',
@@ -199,7 +203,7 @@ export async function transferFundsSEPA(senderId: number, recipientIBAN: string,
                     id: senderId,
                 },
                 data: {
-                    Acc_bal: sender.Acc_bal - amount - 50,
+                    Acc_bal: sender.Acc_bal - amount - Fee,
                 }
             }),
             prisma.user.update({

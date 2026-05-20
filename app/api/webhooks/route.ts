@@ -212,13 +212,19 @@ export async function POST(request: Request) {
                         const appFeeAmount = charge.application_fee_amount;
                         const appFeeCoefficient = refund.amount_refunded / refund.amount_captured;
 
+                        const order = await prisma.paymentIntents.findUnique({ where: { id: orderId } });
+                        const seller = order?.sellerId
+                            ? await prisma.seller.findUnique({ where: { stripeAccountId: order.sellerId } })
+                            : null;
+                        const feePercent = seller?.ApplicationFeePercent ?? 10;
+
                         if (appFeeId && appFeeAmount !== null) {
                             await prisma.applicationFee.update({
                                 where: {
                                     stripeId: appFeeId,
                                 },
                                 data: {
-                                    amountRefunded: Math.round(refund.amount * appFeeCoefficient * 0.1),
+                                    amountRefunded: Math.round(refund.amount * appFeeCoefficient * feePercent / 100),
                                 }
                             });
                         }
