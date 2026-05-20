@@ -166,6 +166,8 @@ model transfer{
   status          String   @default("failed")
   pain001Xml      String?   //ISO koji se salje banci (initiation)
   pain002Xml      String?   //ISO koji se prima od banke (status report)
+  pacs008Xml      String?   //ISO koji banka posiljatelja salje banci primatelja
+  pacs002Xml      String?   //ISO koji banka primatelja salje banci posiljatelja
 }
 
 model ApplicationFee{

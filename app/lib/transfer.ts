@@ -164,17 +164,20 @@ export async function transferFundsSEPA(senderId: number, recipientIBAN: string,
                 pain001Xml,
             }
         });
+    
+        const BaseUrl = 'http://localhost:3000/';
 
-        const BaseUrl = 'http://localhost:3000';
-
-        const bankResponse = await fetch(`${BaseUrl}/api/bank`, { //salji pain.001 banci
+        const bankResponse = await fetch(`${BaseUrl}/api/bank_1`, { //salji pain.001 banci
             method: 'POST',
-            headers: { 'Content-Type': 'application/xml'},
+            headers: {
+                'Content-Type': 'application/xml',
+                'X-Transfer-Id': String(prismaTransferEntry.id), //da bank_1 ruta zna na koji transfer spremiti poruku
+            },
             body: pain001Xml,
         })
 
         const pain002Xml = await bankResponse.text();
-        console.log('Bank returned:', pain002Xml.substring(0, 300));
+        //console.log('Bank returned:', pain002Xml.substring(0, 300));
         await validatePain002(pain002Xml, prismaTransferEntry.id);
         const bankStatus = pain002Xml.match(/<GrpSts>(.*?)<\/GrpSts>/)?.[1] ?? 'RJCT';
 

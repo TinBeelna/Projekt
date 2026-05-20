@@ -93,18 +93,38 @@ export default async function UserProvisionsPage() {
               <summary className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase cursor-pointer hover:bg-gray-50 select-none">
                 ISO 20022 poruke
               </summary>
-              <div className="grid grid-cols-2 divide-x border-t bg-gray-50">
-                <div className="p-4">
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">pain.001 — Payment Initiation</p>
-                  <pre className="text-xs text-gray-700 overflow-auto max-h-64 whitespace-pre-wrap break-all">
-                    {t.pain001Xml ?? 'Nema poruke'}
-                  </pre>
+              <div className="border-t bg-gray-50">
+                <div className="grid grid-cols-2 divide-x border-b">
+                  <div className="p-4">
+                    <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Poslali smo (banci)</p>
+                    <p className="text-xs font-semibold text-blue-500 uppercase mb-2">pain.001 — Payment Initiation</p>
+                    <pre className="text-xs text-gray-700 overflow-auto max-h-64 whitespace-pre-wrap break-all">
+                      {t.pain001Xml ?? 'Nema poruke'}
+                    </pre>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Primili smo (od banke)</p>
+                    <p className="text-xs font-semibold text-blue-500 uppercase mb-2">pain.002 — Status Report</p>
+                    <pre className="text-xs text-gray-700 overflow-auto max-h-64 whitespace-pre-wrap break-all">
+                      {t.pain002Xml ?? 'Nema poruke'}
+                    </pre>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">pain.002 — Status Report</p>
-                  <pre className="text-xs text-gray-700 overflow-auto max-h-64 whitespace-pre-wrap break-all">
-                    {t.pain002Xml ?? 'Nema poruke'}
-                  </pre>
+                <div className="grid grid-cols-2 divide-x">
+                  <div className="p-4">
+                    <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Banka (pošiljatelja) šalje banci (primatelja)</p>
+                    <p className="text-xs font-semibold text-blue-500 uppercase mb-2">pacs.008 — FI Credit Transfer</p>
+                    <pre className="text-xs text-gray-700 overflow-auto max-h-64 whitespace-pre-wrap break-all">
+                      {t.pacs008Xml ?? 'Nema poruke'}
+                    </pre>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs font-semibold text-gray-400 uppercase mb-1">Banka (primatelja) šalje banci (pošiljatelja)</p>
+                    <p className="text-xs font-semibold text-blue-500 uppercase mb-2">pacs.002 — FI Status Report</p>
+                    <pre className="text-xs text-gray-700 overflow-auto max-h-64 whitespace-pre-wrap break-all">
+                      {t.pacs002Xml ?? 'Nema poruke'}
+                    </pre>
+                  </div>
                 </div>
               </div>
             </details>

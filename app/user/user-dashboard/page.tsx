@@ -154,7 +154,7 @@ export default async function UserDashboardPage() {
                       </td>
                       <td className="px-6 py-4 font-medium text-gray-900">{personName}</td>
                       <td className="px-6 py-4 font-mono text-gray-500 text-xs">{t.recipientIBAN}</td>
-                      <td className={`px-6 py-4 font-bold ${isSent ? 'text-red-600' : 'text-green-600'}`}>
+                      <td className={`px-6 py-4 font-bold ${t.status === 'failed' ? 'text-gray-400' : isSent ? 'text-red-600' : 'text-green-600'}`}>
                         {isSent ? '-' : '+'}{(t.amount / 100).toFixed(2)} EUR
                       </td>
                       <td className="px-6 py-4 text-gray-500">
@@ -164,7 +164,11 @@ export default async function UserDashboardPage() {
                         })}
                       </td>
                       <td className="px-6 py-4">
-                        <span className="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          t.status === 'succeeded' ? 'bg-green-100 text-green-800' :
+                          t.status === 'pending'   ? 'bg-yellow-100 text-yellow-800' :
+                                                     'bg-red-100 text-red-700'
+                        }`}>
                           {t.status}
                         </span>
                       </td>
