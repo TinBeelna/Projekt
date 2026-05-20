@@ -494,7 +494,7 @@ export async function POST(request: Request) {
                                         createdAt: new Date(invoice.created * 1000),
                                         periodStart: new Date(invoice.period_start * 1000),
                                         // periodEnd: new Date(invoice.period_end * 1000),
-                                        paidAt: new Date(),
+                                        paidAt: new Date((invoice.status_transitions?.paid_at ?? 0) * 1000),
                                         invoicePdfUrl: invoice.invoice_pdf,
                                         paymentMethod: paymentMethod,         
                                     },
@@ -677,7 +677,7 @@ export async function POST(request: Request) {
                     case 'charge.dispute.funds_withdrawn': { //u slucaju da je potreban kasnije
                         const dispute = event.data.object;
                         console.log(`Oduzet novac za dispute: ${dispute.id} u kolicini ${dispute.amount}`);
-                    }
+                    break;}
 
                     case 'application_fee.created': {
                         try {

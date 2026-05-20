@@ -2,6 +2,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { stripe } from "@/app/lib/stripe";
 import { revalidatePath } from "next/cache";
+import { isAdmin } from "@/app/lib/authentication";
 
 export async function getIntentDisputes(payment_intent_id: string) {
 
@@ -23,7 +24,8 @@ export async function getIntentDisputes(payment_intent_id: string) {
     }));
 }
 
-export async function closeDispute(dispute_id: string) { //ako (kao) nemamo argument; na dashboardu nam se skida novac
+export async function closeDispute(dispute_id: string) {
+    await isAdmin(); //ako (kao) nemamo argument; na dashboardu nam se skida novac
 
     await stripe.disputes.close(dispute_id);
 
@@ -38,7 +40,8 @@ export async function closeDispute(dispute_id: string) { //ako (kao) nemamo argu
     revalidatePath('/admin/disputes');
 }
 
-export async function provideDisputeEvidence(dispute_id: string, argument: string) { //test funkcija za "dokaz"
+export async function provideDisputeEvidence(dispute_id: string, argument: string) {
+    await isAdmin(); //test funkcija za "dokaz"
 
     const dispute = await prisma.disputes.update({
         where: {
@@ -63,6 +66,7 @@ export async function provideDisputeEvidence(dispute_id: string, argument: strin
 }
 
 export async function submitDisputeToBank(dispute_id: string) {
+    await isAdmin();
     await stripe.disputes.update(dispute_id, {
         submit: true,
     })

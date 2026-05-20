@@ -2,6 +2,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache"; //bez osvjezavanja (F5) admin vidi request
 import { stripe } from "@/app/lib/stripe";
+import { isAdminOrRefundAdmin } from "@/app/lib/authentication";
 
 export async function requestRefundAction(stripeId: string, amount: number) {
     await prisma.paymentIntents.updateMany({
@@ -19,6 +20,7 @@ export async function requestRefundAction(stripeId: string, amount: number) {
 }
 
 export async function RefundAction(stripeId: string, amount: number, currency: string) {
+    await isAdminOrRefundAdmin();
     try {
         const refund = await stripe.refunds.create({
             payment_intent: stripeId,

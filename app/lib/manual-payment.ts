@@ -2,8 +2,10 @@
 import { stripe } from "@/app/lib/stripe";
 import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { isAdmin } from "@/app/lib/authentication";
 
 export async function capturePayment(paymentIntentId: string, amount: number, fullAmount: number) {
+  await isAdmin();
   try {
     const params: any = {};
     const amountToCapture = Math.round(amount);
@@ -26,6 +28,7 @@ export async function capturePayment(paymentIntentId: string, amount: number, fu
 
 
 export async function cancelPayment(paymentIntentId: string) {
+  await isAdmin();
   try {
     // je li vec otkazano?
     const intent = await stripe.paymentIntents.retrieve(paymentIntentId);

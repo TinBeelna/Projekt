@@ -57,7 +57,7 @@ async function generateUniqueIBAN(): Promise<string> {
         )
         if (!existing) return finalIBAN;
 
-        throw new Error('IBAN vec postoji!!');
+        continue; //nastavi (generiraj iznova) ako se vec desi da postoji
     }
 }
 

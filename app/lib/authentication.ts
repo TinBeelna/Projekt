@@ -20,6 +20,24 @@ export async function isAdmin() {
     return user;
 }
 
+export async function isAdminOrRefundAdmin() {
+    const session = await auth();
+    const email = session?.user?.email;
+
+    if(!email) return null;
+
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    const configs = await prisma.roleRouteConfig.findMany({
+        where: { routePrefix: { in: ['/admin', '/refundAdmin'] } }
+    });
+    const allowedRoles = configs.map(c => c.role);
+    if(!user || !allowedRoles.includes(user.role)) {
+        notFound();
+    }
+    return user;
+}
+
 export async function isRefundAdmin() {
     const session = await auth();
     const email = session?.user?.email;

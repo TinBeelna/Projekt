@@ -110,7 +110,7 @@ export default function SubscriptionButtons({ activeSubId, currentPlan, status, 
           {upgrades.map((plan) => (
             <button
               key={plan.duration}
-              onClick={() => updateSubscription(activeSubId, plan.duration as any)}
+              onClick={() => updateSubscription(activeSubId, plan.duration)}
               className="w-full flex justify-between items-center p-4 bg-white border-2 border-green-50 rounded-xl hover:border-green-500 transition shadow-sm group"
             >
               <span className="font-bold text-gray-800">
@@ -134,7 +134,7 @@ export default function SubscriptionButtons({ activeSubId, currentPlan, status, 
     {downgrades.map((plan) => (
         <button
           key={plan.duration}
-          onClick={() => updateSubscription(activeSubId, plan.duration as any)}
+          onClick={() => updateSubscription(activeSubId, plan.duration)}
           className="w-full flex justify-between items-center p-4 bg-white border border-gray-100 rounded-xl hover:border-gray-400 transition group"
         >
           <span className="font-medium text-gray-500">
@@ -159,7 +159,7 @@ export default function SubscriptionButtons({ activeSubId, currentPlan, status, 
             <button 
               key={plan.duration}
               // Proslijeđujemo i plan.duration i odabranu valutu
-              onClick={() => requestSubscription(plan.duration as any, selectedCurrency)}
+              onClick={() => requestSubscription(plan.duration, selectedCurrency)}
               className="flex justify-between items-center p-6 border-2 border-gray-100 rounded-3xl hover:border-blue-600 bg-white transition shadow-sm group text-left"
             >
               <div className="font-bold text-lg">{plan.label}</div>
