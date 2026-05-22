@@ -449,21 +449,28 @@ export async function POST(request: Request) {
 
                     case 'invoice.created': {
                         try {
-                            console.log('RADIM RACUN PRETPLATE');
                             const invoice = event.data.object as Stripe.Invoice;
-                            const invoiceId = invoice.id;
-                            
-                            const existingInvoice = await prisma.invoice.findUnique({ 
-                                where: { stripeInvoiceId: invoiceId}
-                            });
 
-                            if (existingInvoice) { //ako invoice vec postoji u db nema obrade;
-                                console.log('Invoice vec postoji)');
+                            if (invoice.status === 'draft') {
+                                console.log(`Invoice ${invoice.id} je draft, preskacemo.`);
                                 break;
                             }
+
+                            console.log('RADIM RACUN PRETPLATE');
+                            const invoiceId = invoice.id;
+
+                            const existingInvoice = await prisma.invoice.findUnique({
+                                where: { stripeInvoiceId: invoiceId }
+                            });
+
+                            if (existingInvoice) {
+                                console.log('Invoice vec postoji');
+                                break;
+                            }
+
                             const customerId = typeof invoice.customer === 'string'
-                            ? invoice.customer
-                            :invoice.customer?.id;
+                                ? invoice.customer
+                                : invoice.customer?.id;
 
                             console.log(`Racun ${invoice.id} je za kupca ${customerId}`);
 
@@ -472,18 +479,15 @@ export async function POST(request: Request) {
                             });
 
                             let subscriptionId: string | null = null;
-
-                            if ((invoice as any).subscription) { //type issue handling + get sub id
+                            if ((invoice as any).subscription) {
                                 subscriptionId = (invoice as any).subscription as string;
                             } else if (invoice.lines?.data?.[0]?.subscription) {
                                 subscriptionId = invoice.lines.data[0].subscription as string;
                             }
 
-                            let paymentMethod = 'card'; //za sad
-
                             if (user) {
                                 await prisma.invoice.create({
-                                    data: { 
+                                    data: {
                                         stripeInvoiceId: invoice.id,
                                         userId: user.id,
                                         subscriptionId: subscriptionId,
@@ -493,44 +497,80 @@ export async function POST(request: Request) {
                                         currency: invoice.currency,
                                         createdAt: new Date(invoice.created * 1000),
                                         periodStart: new Date(invoice.period_start * 1000),
-                                        // periodEnd: new Date(invoice.period_end * 1000),
-                                        paidAt: new Date((invoice.status_transitions?.paid_at ?? 0) * 1000),
+                                        paidAt: invoice.status_transitions?.paid_at
+                                            ? new Date(invoice.status_transitions.paid_at * 1000)
+                                            : null,
                                         invoicePdfUrl: invoice.invoice_pdf,
-                                        paymentMethod: paymentMethod,         
+                                        paymentMethod: 'card',
                                     },
                                 });
                                 console.log(`✅ Invoice upisan: ${invoice.id}`);
-                                }
+                            }
                         } catch (err) {
                             console.error('Error tijekom invoice.created webhooka: ', err);
                         }
                     break;}
                     
-                    case 'invoice.paid': //Samo update statusa 
-                    case 'invoice.payment_succeeded': 
+                    case 'invoice.paid':
+                    case 'invoice.payment_succeeded':
                         try {
                             console.log('Uspjesno placanje racuna!');
                             const invoice = event.data.object as Stripe.Invoice;
                             const invoiceId = invoice.id;
-                            
+
                             const existingInvoice = await prisma.invoice.findUnique({
-                                where: { stripeInvoiceId: invoiceId}
+                                where: { stripeInvoiceId: invoiceId }
                             });
 
-                            if(existingInvoice) {
+                            if (existingInvoice) {
                                 await prisma.invoice.update({
-                                where: { id: existingInvoice?.id },
-                                data: {
-                                    status: invoice.status,
-                                }
+                                    where: { id: existingInvoice.id },
+                                    data: {
+                                        status: invoice.status,
+                                        paidAt: invoice.status_transitions?.paid_at
+                                            ? new Date(invoice.status_transitions.paid_at * 1000)
+                                            : null,
+                                    }
                                 });
-
-                            console.log(`Azuriran invoice ${existingInvoice.id} status na ${invoice.status}`);
-                        } else {
-                            console.log(`Nema racuna za Stripe invoice ID: ${invoiceId}`);
-                        }
+                                console.log(`Azuriran invoice ${existingInvoice.id} status na ${invoice.status}`);
+                            } else {
+                                // invoice.created je bio draft pa preskocen; kreiramo ga sada
+                                const customerId = typeof invoice.customer === 'string'
+                                    ? invoice.customer
+                                    : invoice.customer?.id;
+                                const user = await prisma.user.findUnique({
+                                    where: { stripeId: customerId }
+                                });
+                                let subscriptionId: string | null = null;
+                                if ((invoice as any).subscription) {
+                                    subscriptionId = (invoice as any).subscription as string;
+                                } else if (invoice.lines?.data?.[0]?.subscription) {
+                                    subscriptionId = invoice.lines.data[0].subscription as string;
+                                }
+                                if (user) {
+                                    await prisma.invoice.create({
+                                        data: {
+                                            stripeInvoiceId: invoice.id,
+                                            userId: user.id,
+                                            subscriptionId: subscriptionId,
+                                            invoiceNumber: invoice.number,
+                                            status: invoice.status,
+                                            total: invoice.total,
+                                            currency: invoice.currency,
+                                            createdAt: new Date(invoice.created * 1000),
+                                            periodStart: new Date(invoice.period_start * 1000),
+                                            paidAt: invoice.status_transitions?.paid_at
+                                                ? new Date(invoice.status_transitions.paid_at * 1000)
+                                                : null,
+                                            invoicePdfUrl: invoice.invoice_pdf,
+                                            paymentMethod: 'card',
+                                        },
+                                    });
+                                    console.log(`✅ Invoice kreiran iz paid eventa: ${invoice.id}`);
+                                }
+                            }
                         } catch (err) {
-                            console.error('Error procesuirajuci invoice succeeded/paid webhook:',err);
+                            console.error('Error procesuirajuci invoice succeeded/paid webhook:', err);
                         }
                     break;
 

@@ -19,6 +19,20 @@ export async function requestRefundAction(stripeId: string, amount: number) {
     revalidatePath("/admin/refunds");
 }
 
+export async function cancelRefundAction(stripeId: string) {
+    await isAdminOrRefundAdmin();
+    await prisma.paymentIntents.updateMany({
+        where: { stripeId },
+        data: {
+            status: "DECLINED",
+            refundAmount: 0,
+        },
+    });
+    revalidatePath("/user/refunds");
+    revalidatePath("/admin/refunds");
+    revalidatePath("/refundAdmin/refunds");
+}
+
 export async function RefundAction(stripeId: string, amount: number, currency: string) {
     await isAdminOrRefundAdmin();
     try {

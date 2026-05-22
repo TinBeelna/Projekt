@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  getIntentDisputes, 
-  provideDisputeEvidence, 
-  closeDispute, 
-  submitDisputeToBank 
+import {
+  getIntentDisputes,
+  closeDispute,
+  submitDisputeToBank
 } from "@/app/lib/dispute";
 
 export default function DisputeSection({ stripeId }: { stripeId: string }) {
@@ -81,20 +80,10 @@ export default function DisputeSection({ stripeId }: { stripeId: string }) {
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    <button 
-                      onClick={async () => {
-                        await provideDisputeEvidence(dispute.disputeId, evidenceMap[dispute.id]);
-                        console.log("Evidence saved to database.");
-                      }}
-                      className="bg-white border border-gray-300 px-4 py-2 rounded text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
-                    >
-                      Provide evidence
-                    </button>
-                    
-                    <button 
+                    <button
                       onClick={async () => {
                         if(confirm("Submit to bank? This action cannot be undone.")) {
-                          await submitDisputeToBank(dispute.disputeId);
+                          await submitDisputeToBank(dispute.disputeId, evidenceMap[dispute.id] || dispute.evidence || "");
                           fetchDisputes();
                         }
                       }}

@@ -83,7 +83,7 @@ export async function POST(req: Request) {
         payment_method: defaultCard.paymentMethodId,
         payment_method_options: {
             card: {
-              request_three_d_secure: 'any',
+              request_three_d_secure: 'automatic',
               //request_multicapture: 'if_available',
             }
           },
@@ -101,7 +101,7 @@ export async function POST(req: Request) {
         },
         capture_method: captureMethod,
 
-      });
+      }, { idempotencyKey: crypto.randomUUID() });
       console.log("Info o placanju:", { //za provjeru
       amount: amount,
       currency: currency,
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
           customer: user.stripeId ?? undefined,
           payment_method_options: {
             card: {
-              request_three_d_secure: 'any',
+              request_three_d_secure: 'automatic',
               //request_multicapture: 'if_available',
             }
           },

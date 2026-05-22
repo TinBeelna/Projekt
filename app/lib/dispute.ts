@@ -40,35 +40,20 @@ export async function closeDispute(dispute_id: string) {
     revalidatePath('/admin/disputes');
 }
 
-export async function provideDisputeEvidence(dispute_id: string, argument: string) {
-    await isAdmin(); //test funkcija za "dokaz"
+export async function submitDisputeToBank(dispute_id: string, evidence: string) {
+    await isAdmin();
 
-    const dispute = await prisma.disputes.update({
-        where: {
-            disputeId: dispute_id
-        },
-        data: {
-            evidence: argument
-        },
+    await prisma.disputes.update({
+        where: { disputeId: dispute_id },
+        data: { evidence },
     });
-    // winning_evidence za W
-    // losing_evidence za L
+
     await stripe.disputes.update(dispute_id, {
         evidence: {
-            uncategorized_text: argument,
+            uncategorized_text: evidence,
         },
         submit: true,
-    })
+    });
 
-   console.log(`Oduzet novac za dispute: ${dispute.disputeId}`);
-    revalidatePath('/admin/disputes');
-
-}
-
-export async function submitDisputeToBank(dispute_id: string) {
-    await isAdmin();
-    await stripe.disputes.update(dispute_id, {
-        submit: true,
-    })
     revalidatePath('/admin/disputes');
 }

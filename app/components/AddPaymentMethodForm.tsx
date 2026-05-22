@@ -77,16 +77,16 @@ function CardForm({ userId, onSuccess, onError}: CardFormProps) {
             if (!saveResult.success) { //dodano brisanje polja u slucaju da je kartica duplikat!
                cardElement.clear();
                setCardholderName('');
-               onSuccess();
                setClientSecret(''); //reset client secreta na kraju bloka
+               setTimeout(onSuccess, 100);
                throw new Error(saveResult.error || 'Nepoznati error tijekom spremanja metode placanja!');
-                
+
             }
 
             cardElement.clear();
             setCardholderName('');
-            onSuccess();
             setClientSecret(''); //reset client secreta na kraju bloka
+            setTimeout(onSuccess, 100);
 
         } catch (err) {
             onError(err instanceof Error ? err.message : 'Nepoznati error prilikom sejvanja kartice!!');
@@ -111,7 +111,7 @@ function CardForm({ userId, onSuccess, onError}: CardFormProps) {
           disabled={loading}
         />
       </div>
-      
+
       <div className="mb-4">
         <label htmlFor="card-element" className="block text-sm font-medium text-gray-700 mb-1">
           Card Details
@@ -137,7 +137,7 @@ function CardForm({ userId, onSuccess, onError}: CardFormProps) {
           />
         </div>
       </div>
-      
+
       <button
         type="submit"
         disabled={!stripe || !clientSecret || loading}

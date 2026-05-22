@@ -11,7 +11,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
 
 export default function MarketplaceProductsPage() {
 
-    const [sellers, setSellers] = useState<SellerWithProducts[]>([]);
+    const [sellers, setSellers] = useState<SellerWithProducts[]>([]); //dobivanje infa o sellerima iz db
     const [clientSecret, setClientSecret] = useState<string>("");
     const [FXcurrency, setCurrency] = useState('eur'); //dodano za fx; eur kao standardna
     const [hasDefaultCard, setDefaultCard] = useState<boolean | null>(null); //default payment

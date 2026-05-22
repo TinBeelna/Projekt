@@ -69,6 +69,10 @@ export async function registerUser(formData: FormData) {
     const firstName = formData.get('firstName') as string;
     const lastName = formData.get('lastName') as string;
 
+    if (password.length < 5) {
+        return { error: 'Password must be at least 5 characters' };
+    }
+
     // provjeri postoji li već korisnik s tim emailom
     const existingUser = await prisma.user.findUnique({
         where: { email }

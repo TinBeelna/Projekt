@@ -1,5 +1,6 @@
 import { prisma } from "@/app/lib/prisma";
 import AdminExecuteRefund from "@/app/components/ConfirmRefundButton";
+import CancelRefundButton from "@/app/components/CancelRefundButton";
 
 // Forces the admin to always see fresh data from the DB
 export const dynamic = 'force-dynamic';
@@ -18,8 +19,14 @@ export default async function RefundAdminPage() {
   // 2. Fetch history of all successful refunds
   const completedRefunds = await prisma.refunds.findMany({
     orderBy: {
-      id: 'desc', 
+      id: 'desc',
     },
+  });
+
+  // 3. Fetch declined refund requests
+  const declinedRefunds = await prisma.paymentIntents.findMany({
+    where: { status: "DECLINED" },
+    orderBy: { id: 'desc' },
   });
 
   return (
@@ -86,11 +93,14 @@ export default async function RefundAdminPage() {
                       </td>
 
                       <td className="px-6 py-4 text-center">
-                          <AdminExecuteRefund 
-                            stripeId={req.stripeId!} 
+                        <div className="flex justify-center gap-2">
+                          <AdminExecuteRefund
+                            stripeId={req.stripeId!}
                             amountCents={req.refundAmount || 0}
-                            currency={req.currency} 
+                            currency={req.currency}
                           />
+                          <CancelRefundButton stripeId={req.stripeId!} />
+                        </div>
                       </td>
                     </tr>
                   );
@@ -102,49 +112,60 @@ export default async function RefundAdminPage() {
       </div>
 
       {/* POVIJEST IZVRŠENIH REFUNDOVA */}
-      <div>
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">Povijest svih isplata</h2>
-        {completedRefunds.length === 0 ? (
-          <p className="text-gray-400 bg-gray-50 p-6 rounded-lg text-center">Nema evidentiranih izvršenih povrata.</p>
-        ) : (
-          <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Kupac</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-green-600 uppercase">Vraćeno</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Vrijeme:</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Stripe ID</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {completedRefunds.map((refund) => (
-                  <tr key={refund.id} className="hover:bg-green-50/30 transition">
-                    <td className="px-6 py-4 text-[10px] font-mono text-gray-400">#{refund.id}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {refund.firstName} {refund.lastName}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{refund.email}</td>
-                    <td className="px-6 py-4 text-sm font-black text-green-700">
-                      {(refund.amount / 100).toFixed(2)} {refund.currency}
-                    </td>
-                    <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">
-                      {refund.stripePaymentId}
-                    </td>
-                    <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">
-                      {refund.createdAt
-                      ? new Date(refund.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short'})
-                      : 'N/A'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {(() => {
+        const history = [
+          ...completedRefunds.map(r => ({
+            key: `r-${r.id}`, id: r.id, firstName: r.firstName, lastName: r.lastName,
+            email: r.email, stripeId: r.stripePaymentId, createdAt: r.createdAt,
+            declined: false, amount: r.amount, currency: r.currency,
+          })),
+          ...declinedRefunds.map(r => ({
+            key: `d-${r.id}`, id: r.id, firstName: r.firstName, lastName: r.lastName,
+            email: r.email, stripeId: r.stripeId, createdAt: r.createdAt,
+            declined: true, amount: 0, currency: r.currency,
+          })),
+        ].sort((a, b) => b.id - a.id);
+
+        return (
+          <div>
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Povijest svih isplata</h2>
+            {history.length === 0 ? (
+              <p className="text-gray-400 bg-gray-50 p-6 rounded-lg text-center">Nema evidentiranih izvršenih povrata.</p>
+            ) : (
+              <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Kupac</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-green-600 uppercase">Vraćeno</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Stripe ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Vrijeme:</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {history.map((row) => (
+                      <tr key={row.key} className={row.declined ? "hover:bg-red-50/30 bg-red-50/20 transition" : "hover:bg-green-50/30 transition"}>
+                        <td className="px-6 py-4 text-[10px] font-mono text-gray-400">#{row.id}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{row.firstName} {row.lastName}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{row.email}</td>
+                        <td className={`px-6 py-4 text-sm font-black ${row.declined ? "text-red-600" : "text-green-700"}`}>
+                          {row.declined ? "Otkazano" : `${(row.amount / 100).toFixed(2)} ${row.currency}`}
+                        </td>
+                        <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">{row.stripeId}</td>
+                        <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">
+                          {row.createdAt ? new Date(row.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        );
+      })()}
     </div>
   );
 }

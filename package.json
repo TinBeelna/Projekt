@@ -17,7 +17,8 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "create:admins": "ts-node --compiler-options {\"module\":\"CommonJS\"} scripts/create-admins.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
