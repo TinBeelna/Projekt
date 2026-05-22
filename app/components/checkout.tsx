@@ -109,7 +109,7 @@ function PaymentForm({clientsecret, amount, currency}: { clientsecret?: string; 
 
   //APPLE PAY useeffect
   useEffect(() => {
-    if (!stripe || !amount || !currency) return; //ne ucitavaj ako nema infa
+if (!stripe || !amount || !currency) return; //ne ucitavaj ako nema infa
 
     const pr = stripe.paymentRequest({ //payment request (kaze se appleu koji info dati kada user dobije face ID prompt) (+ google)
       country: 'HR',
@@ -121,8 +121,16 @@ function PaymentForm({clientsecret, amount, currency}: { clientsecret?: string; 
 
     pr.canMakePayment().then((result) => { //set state ako je apple pay dostupan (+google)
       console.log('canMakePayment result:', result);
-      if (result?.applePay) setApplePaymentRequest(pr);
-      if (result?.googlePay) setGooglePaymentRequest(pr);
+      if (result?.applePay) {
+        setApplePaymentRequest(pr);
+      } else {
+        console.log('Apple Pay nije dostupan: ili nema kartice u Walletu, ili browser ne podrzava Apple Pay.');
+      }
+      if (result?.googlePay) {
+        setGooglePaymentRequest(pr);
+      } else {
+        console.log('Google Pay nije dostupan: ili nema kartice, ili browser ne podrzava Google Pay.');
+      }
     });
 
     pr.on('paymentmethod', 

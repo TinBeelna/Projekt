@@ -60,7 +60,7 @@ export default async function UserDashboardPage() {
         in: senderIds
       }
     },
-    select: { id: true, firstName: true, lastName: true}
+    select: { id: true, firstName: true, lastName: true, IBAN: true }
   })
   const senderMap = Object.fromEntries(senders.map(s => [s.id, s]));
 
@@ -153,7 +153,9 @@ export default async function UserDashboardPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 font-medium text-gray-900">{personName}</td>
-                      <td className="px-6 py-4 font-mono text-gray-500 text-xs">{t.recipientIBAN}</td>
+                      <td className="px-6 py-4 font-mono text-gray-500 text-xs">
+                        {isSent ? t.recipientIBAN : (senderMap[t.senderId]?.IBAN ?? '—')}
+                      </td>
                       <td className={`px-6 py-4 font-bold ${t.status === 'failed' ? 'text-gray-400' : isSent ? 'text-red-600' : 'text-green-600'}`}>
                         {isSent ? '-' : '+'}{(t.amount / 100).toFixed(2)} EUR
                       </td>

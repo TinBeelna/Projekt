@@ -196,13 +196,14 @@ export async function POST(request: Request) {
                     try {
                         const refund = event.data.object;
                         const orderId = Number (refund.metadata?.orderId);
+                        const isFullyRefunded = (refund as Stripe.Charge).refunded === true;
+
                         await prisma.paymentIntents.update({
                                 where: { id: orderId},
                                 data: {
-                                    status: "Charge_refunded",
-                                    amount: refund.amount,
+                                    ...(isFullyRefunded ? { status: "Charge_refunded", amount: refund.amount } : {}),
                                     currency: refund.currency,
-                                } 
+                                }
                             });
 
                         const charge = refund as Stripe.Charge;

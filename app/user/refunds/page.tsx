@@ -18,17 +18,22 @@ export default async function RefundsPage() {
   const userPayments = await prisma.paymentIntents.findMany({
     where: {
       email: mail,
-      status: 'Succeeded',
+      status: { in: ['Succeeded', 'REQUESTED_REFUND', 'DECLINED'] },
     },
     orderBy: { id: 'desc' },
   });
 
+  const disputedStripeIds = new Set(
+    (await prisma.disputes.findMany({
+      where: { paymentStripeId: { in: userPayments.map(p => p.stripeId).filter(Boolean) as string[] } },
+      select: { paymentStripeId: true },
+    })).map(d => d.paymentStripeId)
+  );
+
   // filtriranje; ovisno o captured amount, moguce je napraviti refund sve dok nije 0
   const refundablePayments = userPayments.filter((payment) => {
-   
     const currentBalance = payment.capturedAmount ?? (payment.amount || 0);
-    
-    return currentBalance > 0;
+    return currentBalance > 0 || disputedStripeIds.has(payment.stripeId);
   });
 
   return (
@@ -57,15 +62,18 @@ export default async function RefundsPage() {
                 const currentBalanceCents = payment.capturedAmount ?? (payment.amount || 0);
                 const isWaiting = payment.status === "REQUESTED_REFUND";
                 const isDeclined = payment.status === "DECLINED";
+                const isDisputed = disputedStripeIds.has(payment.stripeId);
 
                 return (
-                  <tr key={payment.id} className={isWaiting ? "bg-amber-50" : isDeclined ? "bg-red-50" : ""}>
+                  <tr key={payment.id} className={isDisputed ? "bg-purple-50" : isWaiting ? "bg-amber-50" : isDeclined ? "bg-red-50" : ""}>
                     <td className="px-6 py-4 font-mono text-xs">#{payment.id}</td>
                     <td className="px-6 py-4 text-blue-700 font-bold">
                       {(currentBalanceCents / 100).toFixed(2)} {payment.currency}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {isWaiting ? (
+                      {isDisputed ? (
+                        <span className="text-purple-700 font-bold text-[10px]">OSPORENO — POVRAT BLOKIRAN</span>
+                      ) : isWaiting ? (
                         <span className="text-amber-600 font-bold text-[10px]">ČEKA OBRADU</span>
                       ) : isDeclined ? (
                         <span className="text-red-600 font-bold text-[10px]">ZAHTJEV ODBIJEN</span>

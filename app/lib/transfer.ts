@@ -143,6 +143,10 @@ export async function transferFundsSEPA(senderId: number, recipientIBAN: string,
             throw new Error("Nema sendera/receivera sa tim ID-em!");
         }
 
+        if (sender.IBAN === recipientIBAN) {
+            throw new Error("Ne možete slati novac sami sebi.");
+        }
+
         if (sender.Acc_bal < amount + Fee) {
             throw new Error("Nema dovoljno novca na racunu!!!");
         }
