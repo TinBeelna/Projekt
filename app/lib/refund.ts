@@ -3,8 +3,23 @@ import { prisma } from "@/app/lib/prisma";
 import { revalidatePath } from "next/cache"; //bez osvjezavanja (F5) admin vidi request
 import { stripe } from "@/app/lib/stripe";
 import { isAdminOrRefundAdmin } from "@/app/lib/authentication";
+import { auth } from "@/app/lib/auth"; //za refund legitimacy check
 
 export async function requestRefundAction(stripeId: string, amount: number) {
+
+    //user authentication check (samo je li logiran)
+    const session = await auth();
+    if (!session?.user?.email) throw new Error("User nije autenticiran!");
+
+    const userId = session.user.id;
+    const payment = await prisma.paymentIntents.findFirst({
+        where: {
+            stripeId: stripeId,
+        },
+    });
+    //User authorization check (je li mail paymenta isti kao mail logiranog usera; je li on napravio payment??)
+    if (!payment || payment.email !== session.user.email) throw new Error("User nije autoriziran za ovaj refund!");
+
     await prisma.paymentIntents.updateMany({
         where: { 
             stripeId: stripeId 

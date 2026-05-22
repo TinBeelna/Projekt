@@ -31,7 +31,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!isPasswordOk) return null;
 
-        // Convert the numeric ID to a string to satisfy NextAuth's User type
+        // nextauth treba user id kao string
         return {
           ...user,
           id: user.id.toString(),
@@ -44,12 +44,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      // This tells the middleware that the session is valid
+      //middlewareu se kaze da je session legit
       return true; 
     },
     
     async jwt({ token, user }) {
-      // 'user' is only available the first time the JWT is created (on sign in)
       if (user) {
         token.role = user.role ?? "USER";
         token.email = user.email;
