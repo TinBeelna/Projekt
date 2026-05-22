@@ -476,16 +476,21 @@ export async function POST(request: Request) {
                             });
                             const subscriptionId = dbSubForCreated?.stripePaymentId ?? null;
 
-                            // Use max period.end across line items — works for both regular and proration invoices.
+                            // Automatski generirana preporuka za datume
                             const createdMaxLine = (invoice.lines?.data || []).reduce((best: any, line) =>
-                                ((line as any).period?.end || 0) > ((best as any)?.period?.end || 0) ? line : best, null);
-                            const createdPeriodStart = (createdMaxLine as any)?.period?.start
+                                ((line as any).period?.end || 0) > ((best as any)?.period?.end || 0) ? line : best, null); //trazi line item sa zadnjim period.end
+                            const createdPeriodStart = (createdMaxLine as any)?.period?.start   // uzima se njegov period.start, fallback invoice.period_start
                                 ? new Date((createdMaxLine as any).period.start * 1000)
                                 : new Date(invoice.period_start * 1000);
-                            const createdPeriodEnd = (createdMaxLine as any)?.period?.end
+                            const createdPeriodEnd = (createdMaxLine as any)?.period?.end //period end
                                 ? new Date((createdMaxLine as any).period.end * 1000)
-                                : (invoice.period_end ? new Date(invoice.period_end * 1000) : null);
-
+                                : (invoice.period_end ? new Date(invoice.period_end * 1000) : null); //check jer invoice.period_end zna biti 0
+// Why not just use invoice.period_start/invoice.period_end directly?
+// For a regular renewal, those fields describe the billing cycle that generated the invoice, 
+// not the service window being paid for — they're one interval behind. 
+// For proration invoices (plan upgrade/downgrade on the same day), 
+// invoice.period_start == invoice.period_end, both pointing to today, so they're useless. 
+// The line items always carry the correct future service window.
                             if (user) {
                                 await prisma.invoice.create({
                                     data: {
@@ -532,8 +537,7 @@ export async function POST(request: Request) {
                             });
                             const subId = dbSubForPaid?.stripePaymentId ?? null;
 
-                            // Find the line item with the latest period.end (= the service period being paid for).
-                            // Use its period.start AND period.end so both dates are from the same billing window.
+                            //isti princip kao kod invoice.created
                             const paidMaxLine = (invoice.lines?.data || []).reduce((best: any, line) =>
                                 ((line as any).period?.end || 0) > ((best as any)?.period?.end || 0) ? line : best, null);
                             const periodStart = (paidMaxLine as any)?.period?.start
@@ -543,7 +547,7 @@ export async function POST(request: Request) {
                                 ? new Date((paidMaxLine as any).period.end * 1000)
                                 : (invoice.period_end ? new Date(invoice.period_end * 1000) : null);
 
-                            // Retrieve subscription for grace period check
+                            // grace period check; brisati ako ga ima jer je uspjesno placen!
                             let stripeSub: Stripe.Subscription | null = null;
                             if (subId) {
                                 stripeSub = await stripe.subscriptions.retrieve(subId);
@@ -657,8 +661,7 @@ export async function POST(request: Request) {
                             });
                             const subscriptionId = graceSub?.stripePaymentId ?? null;
                             if (subscriptionId) {
-                                // Use invoice.created (Stripe server/test-clock time) instead of Date.now()
-                                // so cancel_at is always in the future relative to the test clock
+                                //invoice.created za vrijeme u slucaju da se koristi test clock
                                 const cancelAt = invoice.created + 24 * 60 * 60;
                                 await stripe.subscriptions.update(subscriptionId, { cancel_at: cancelAt });
                                 console.log(`Grace period postavljen; pretplata ${subscriptionId} se otkazuje: ${new Date(cancelAt * 1000).toISOString()}`);
