@@ -18,6 +18,7 @@ export default async function RefundsPage() {
   const userPayments = await prisma.paymentIntents.findMany({
     where: {
       email: mail,
+      status: 'Plaćeno', 
     },
     orderBy: { id: 'desc' },
   });
