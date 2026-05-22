@@ -3,6 +3,7 @@
 import { prisma } from "@/app/lib/prisma";
 import { stripe } from "@/app/lib/stripe";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/app/lib/auth";
 //import { cookies } from 'next/headers'
 
 export async function getPaymentMethods(userId: string) { //za prikaz payment methoda
@@ -92,20 +93,40 @@ export async function deletePaymentMethod(userId: string, paymentMethodId: strin
    return { success: true, newDefaultId: null};
 }
 
+export async function ensureStripeCustomer(user: { id: number; stripeId: string | null; email: string | null }): Promise<string> {
+   if (user.stripeId) {
+      try {
+         const existing = await stripe.customers.retrieve(user.stripeId);
+         if (!(existing as any).deleted) return user.stripeId;
+      } catch (err: any) {
+         if (err?.code !== 'resource_missing') throw err;
+      }
+   }
+   const newCustomer = await stripe.customers.create({ email: user.email || undefined });
+   await prisma.user.update({ where: { id: user.id }, data: { stripeId: newCustomer.id } });
+   return newCustomer.id;
+}
+
 export async function setupIntentForPaymentMethod(userId: string): Promise<{ clientSecret: string }>{
 
-   const user = await prisma.user.findUnique({
-      where: { stripeId: userId }
-   });
+   let user = await prisma.user.findUnique({ where: { stripeId: userId } });
+
+   if (!user) {
+      const session = await auth();
+      const email = session?.user?.email;
+      if (email) user = await prisma.user.findUnique({ where: { email } });
+   }
 
    if(!user) {
       throw new Error('Nema korisnika sa tim IDem.');
    }
 
+   const customerId = await ensureStripeCustomer(user);
+
    const setupIntent = await stripe.setupIntents.create({
-      customer: user.stripeId || undefined,
-      payment_method_types: ['card'], //bonus task: + apple/google pay
-      usage: 'off_session', //da se moze spremiti kartica bez checkouta
+      customer: customerId,
+      payment_method_types: ['card'],
+      usage: 'off_session',
    })
    return { clientSecret: setupIntent.client_secret! };
 }
@@ -113,9 +134,13 @@ export async function setupIntentForPaymentMethod(userId: string): Promise<{ cli
 export async function savePaymentMethod(userId: string, paymentmethodId: string): Promise< { success: boolean; error?: string }> {
 
    try {
-      const user = await prisma.user.findUnique({
-         where: { stripeId: userId}
-      });
+      let user = await prisma.user.findUnique({ where: { stripeId: userId } });
+
+      if (!user) {
+         const session = await auth();
+         const email = session?.user?.email;
+         if (email) user = await prisma.user.findUnique({ where: { email } });
+      }
 
       if(!user) {
          throw new Error('Nema korisnika koji koristi taj ID za spremanje metode placanja.');
@@ -133,10 +158,11 @@ export async function savePaymentMethod(userId: string, paymentmethodId: string)
          where: { stripeId: userId }
       });
 
-      const isDefault = existingMethods.length === 0; //check je li metoda prva 
+      const isDefault = existingMethods.length === 0; //check je li metoda prva
+      const customerId = await ensureStripeCustomer(user);
 
       if(isDefault) { //postavi kao default ako je prva metoda
-         await stripe.customers.update(user.stripeId!, {
+         await stripe.customers.update(customerId, {
             invoice_settings: {
                default_payment_method: paymentmethodId,
             },

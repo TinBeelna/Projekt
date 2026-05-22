@@ -125,7 +125,7 @@ export default async function MySubscriptionsPage() {
 
                   {/* od kada do kada vrijedi pretplata; prikazi prema placenim racunima za taj period */}
                   <div className="text-[11px] text-gray-500 font-medium">
-                    <p>📅 Razdoblje: <span className="text-gray-700">{new Date(inv.periodStart!).toLocaleDateString('hr-HR')}</span> — <span className="text-gray-700">{new Date(inv.periodEnd!).toLocaleDateString('hr-HR')}</span></p>
+                    <p>📅 Razdoblje: <span className="text-gray-700">{inv.periodStart ? new Date(inv.periodStart).toLocaleDateString('hr-HR') : '—'}</span> — <span className="text-gray-700">{inv.periodEnd ? new Date(inv.periodEnd).toLocaleDateString('hr-HR') : '—'}</span></p>
                     {inv.paidAt && (
                       <p>Datum placanja: {new Date(inv.paidAt).toLocaleString('hr-HR')}</p>
                     )}

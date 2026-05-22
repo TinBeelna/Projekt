@@ -5,6 +5,7 @@ import { stripe } from "@/app/lib/stripe";
 import { redirect } from 'next/navigation'
 import { revalidatePath } from "next/cache";
 import { auth } from "@/app/lib/auth"
+import { ensureStripeCustomer } from "@/app/lib/payment-methods"
 
 
 
@@ -21,13 +22,15 @@ export async function createCustomerPortal() {
         where: { email: userEmail }
     });
 
-    if (!user || !user.stripeId) {
+    if (!user) {
         throw new Error("No Stripe customer found for this user.");
     }
 
+    const customerId = await ensureStripeCustomer(user);
+
     //stripe hosted billing page
     const portalSession = await stripe.billingPortal.sessions.create({
-        customer: user.stripeId,
+        customer: customerId,
         return_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/mysubscriptions`, // Where they go after fixing the card
     });
 
@@ -56,23 +59,20 @@ export async function requestSubscription(duration: string, currency: string) {
 
     if(!user) throw new Error("No user!");
 
-    if (!user.stripeId) {
-        console.log("No user stripe ID!!");
-        return null; 
-    }
+    const customerId = await ensureStripeCustomer(user);
 
     //u slucaju da postoji default kartica (znaci da ima upisanu karticu) pretplata se odmah radi; nema checkout sessiona
     const defaultMethod = await prisma.paymentMethod.findFirst({
         where: {
-            stripeId: user.stripeId,
+            stripeId: customerId,
             isDefault: true,
         }
     })
 
-    if(defaultMethod) { 
+    if(defaultMethod) {
         //koristi default payment method za napraviti pretplatu
         const subcription = await stripe.subscriptions.create({
-            customer: user.stripeId,
+            customer: customerId,
             items: [
                 {price: priceId,}
             ],
@@ -90,8 +90,8 @@ export async function requestSubscription(duration: string, currency: string) {
         //maknuta linija payment methods --> prati se default sa dashboarda
         currency: currency,
         line_items: [{ price: priceId, quantity: 1 }],
-        customer: user?.stripeId || undefined, 
-        customer_email: !user?.stripeId ? userEmail : undefined, // mail ako nema IDa
+        customer: customerId,
+        customer_email: undefined,
         subscription_data: {
             //trial_period_days: 0,
         },

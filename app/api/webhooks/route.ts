@@ -322,9 +322,8 @@ export async function POST(request: Request) {
                                         if (existingInvoice) {
                                             await prisma.invoice.update({
                                                 where: { id: existingInvoice.id },
-                                                data: { 
+                                                data: {
                                                 subscriptionId: subscriptionId,
-                                                periodEnd: endDate,
                                             }});
                                         }
                                 }
@@ -369,24 +368,17 @@ export async function POST(request: Request) {
                                 const price = fullSub.items.data[0]?.price;
                                 const interval = price?.recurring?.interval;
                                 const intervalCount = price?.recurring?.interval_count ?? 1;
-                                const startDate = new Date(subscription.start_date * 1000);
-                                let endDate: Date;
-                                endDate = new Date(startDate.getTime());
-
                                 if (interval === 'week') {
                                     plan = 'weekly';
-                                    endDate.setDate(endDate.getDate() + (intervalCount*7) );
-                                    }
+                                }
 
                                 if (interval === 'month') {
-                                if (intervalCount === 1)plan = 'monthly';
-                                if (intervalCount === 3) plan = 'three_months';
-                                    endDate.setMonth(endDate.getMonth() + intervalCount);
+                                    if (intervalCount === 1) plan = 'monthly';
+                                    if (intervalCount === 3) plan = 'three_months';
                                 }
 
                                 if (interval === 'year') {
                                     plan = 'yearly';
-                                    endDate.setFullYear(endDate.getFullYear() + intervalCount)
                                 }
 
                                 if (!user) {
@@ -400,31 +392,13 @@ export async function POST(request: Request) {
                                 }
 
                             if (plan && user) {
-                                //update end/start date iz novog racuna
-                                if (subscription.latest_invoice) {
-                                    const latestInvoiceId = typeof subscription.latest_invoice === 'string'
-                                    ? subscription.latest_invoice
-                                    : subscription.latest_invoice?.id;
-
-                                    const existingInvoice = await prisma.invoice.findUnique({
-                                        where: { stripeInvoiceId: latestInvoiceId }
-                                    });
-                                    if (existingInvoice) {
-                                        await prisma.invoice.update({
-                                            where: { id: existingInvoice.id },
-                                            data: { 
-                                                subscriptionId: subscriptionId,
-                                                periodEnd: endDate,
-                                        }});
-                                    }
-                                }
-                                //update status pretplate
                                 await prisma.subscriptions.update({
                                     where: { stripePaymentId: subscriptionId},
                                     data: {
                                         status: subscription.status,
                                     }
                                 });
+                                console.log(`Subscription ${subscriptionId} status -> ${subscription.status}`);
                             } 
                         }
                     } catch (err) {
@@ -479,12 +453,20 @@ export async function POST(request: Request) {
                                 where: { stripeId: customerId }
                             });
 
-                            let subscriptionId: string | null = null;
-                            if ((invoice as any).subscription) {
-                                subscriptionId = (invoice as any).subscription as string;
-                            } else if (invoice.lines?.data?.[0]?.subscription) {
-                                subscriptionId = invoice.lines.data[0].subscription as string;
-                            }
+                            const dbSubForCreated = await prisma.subscriptions.findFirst({
+                                where: { userStripeId: customerId }
+                            });
+                            const subscriptionId = dbSubForCreated?.stripePaymentId ?? null;
+
+                            // Use max period.end across line items — works for both regular and proration invoices.
+                            const createdMaxLine = (invoice.lines?.data || []).reduce((best: any, line) =>
+                                ((line as any).period?.end || 0) > ((best as any)?.period?.end || 0) ? line : best, null);
+                            const createdPeriodStart = (createdMaxLine as any)?.period?.start
+                                ? new Date((createdMaxLine as any).period.start * 1000)
+                                : new Date(invoice.period_start * 1000);
+                            const createdPeriodEnd = (createdMaxLine as any)?.period?.end
+                                ? new Date((createdMaxLine as any).period.end * 1000)
+                                : (invoice.period_end ? new Date(invoice.period_end * 1000) : null);
 
                             if (user) {
                                 await prisma.invoice.create({
@@ -497,7 +479,8 @@ export async function POST(request: Request) {
                                         total: invoice.total,
                                         currency: invoice.currency,
                                         createdAt: new Date(invoice.created * 1000),
-                                        periodStart: new Date(invoice.period_start * 1000),
+                                        periodStart: createdPeriodStart,
+                                        periodEnd: createdPeriodEnd,
                                         paidAt: invoice.status_transitions?.paid_at
                                             ? new Date(invoice.status_transitions.paid_at * 1000)
                                             : null,
@@ -519,55 +502,67 @@ export async function POST(request: Request) {
                             const invoice = event.data.object as Stripe.Invoice;
                             const invoiceId = invoice.id;
 
-                            const existingInvoice = await prisma.invoice.findUnique({
-                                where: { stripeInvoiceId: invoiceId }
+                            const customerId = typeof invoice.customer === 'string'
+                                ? invoice.customer
+                                : invoice.customer?.id;
+                            const user = await prisma.user.findUnique({
+                                where: { stripeId: customerId }
                             });
+                            const dbSubForPaid = await prisma.subscriptions.findFirst({
+                                where: { userStripeId: customerId }
+                            });
+                            const subId = dbSubForPaid?.stripePaymentId ?? null;
 
-                            if (existingInvoice) {
-                                await prisma.invoice.update({
-                                    where: { id: existingInvoice.id },
-                                    data: {
+                            // Find the line item with the latest period.end (= the service period being paid for).
+                            // Use its period.start AND period.end so both dates are from the same billing window.
+                            const paidMaxLine = (invoice.lines?.data || []).reduce((best: any, line) =>
+                                ((line as any).period?.end || 0) > ((best as any)?.period?.end || 0) ? line : best, null);
+                            const periodStart = (paidMaxLine as any)?.period?.start
+                                ? new Date((paidMaxLine as any).period.start * 1000)
+                                : new Date(invoice.period_start * 1000);
+                            const periodEnd = (paidMaxLine as any)?.period?.end
+                                ? new Date((paidMaxLine as any).period.end * 1000)
+                                : (invoice.period_end ? new Date(invoice.period_end * 1000) : null);
+
+                            // Retrieve subscription for grace period check
+                            let stripeSub: Stripe.Subscription | null = null;
+                            if (subId) {
+                                stripeSub = await stripe.subscriptions.retrieve(subId);
+                            }
+
+                            if (user) {
+                                await prisma.invoice.upsert({
+                                    where: { stripeInvoiceId: invoiceId },
+                                    update: {
                                         status: invoice.status,
+                                        subscriptionId: subId,
                                         paidAt: invoice.status_transitions?.paid_at
                                             ? new Date(invoice.status_transitions.paid_at * 1000)
                                             : null,
-                                    }
+                                    },
+                                    create: {
+                                        stripeInvoiceId: invoice.id,
+                                        userId: user.id,
+                                        subscriptionId: subId,
+                                        invoiceNumber: invoice.number,
+                                        status: invoice.status,
+                                        total: invoice.total,
+                                        currency: invoice.currency,
+                                        createdAt: new Date(invoice.created * 1000),
+                                        periodStart,
+                                        periodEnd,
+                                        paidAt: invoice.status_transitions?.paid_at
+                                            ? new Date(invoice.status_transitions.paid_at * 1000)
+                                            : null,
+                                        invoicePdfUrl: invoice.invoice_pdf,
+                                        paymentMethod: 'card',
+                                    },
                                 });
-                                console.log(`Azuriran invoice ${existingInvoice.id} status na ${invoice.status}`);
-                            } else {
-                                // invoice.created je bio draft pa preskocen; kreiramo ga sada
-                                const customerId = typeof invoice.customer === 'string'
-                                    ? invoice.customer
-                                    : invoice.customer?.id;
-                                const user = await prisma.user.findUnique({
-                                    where: { stripeId: customerId }
-                                });
-                                let subscriptionId: string | null = null;
-                                if ((invoice as any).subscription) {
-                                    subscriptionId = (invoice as any).subscription as string;
-                                } else if (invoice.lines?.data?.[0]?.subscription) {
-                                    subscriptionId = invoice.lines.data[0].subscription as string;
-                                }
-                                if (user) {
-                                    await prisma.invoice.create({
-                                        data: {
-                                            stripeInvoiceId: invoice.id,
-                                            userId: user.id,
-                                            subscriptionId: subscriptionId,
-                                            invoiceNumber: invoice.number,
-                                            status: invoice.status,
-                                            total: invoice.total,
-                                            currency: invoice.currency,
-                                            createdAt: new Date(invoice.created * 1000),
-                                            periodStart: new Date(invoice.period_start * 1000),
-                                            paidAt: invoice.status_transitions?.paid_at
-                                                ? new Date(invoice.status_transitions.paid_at * 1000)
-                                                : null,
-                                            invoicePdfUrl: invoice.invoice_pdf,
-                                            paymentMethod: 'card',
-                                        },
-                                    });
-                                    console.log(`✅ Invoice kreiran iz paid eventa: ${invoice.id}`);
+                                console.log(`✅ Invoice upsert iz paid eventa: ${invoice.id}`);
+
+                                if (stripeSub && (stripeSub as any).cancel_at) {
+                                    await stripe.subscriptions.update(subId!, { cancel_at: '' });
+                                    console.log(`Grace period izbrisan: pretplata ${subId} vise nema "cancel_at"`);
                                 }
                             }
                         } catch (err) {
@@ -580,10 +575,15 @@ export async function POST(request: Request) {
                             console.log('Placanje invoicea nije uspjelo!!!');
                             const invoice = event.data.object as Stripe.Invoice;
                             const invoiceId = invoice.id;
+                            const customerId = typeof invoice.customer === 'string'
+                                ? invoice.customer
+                                : invoice.customer?.id;
 
                             const existingInvoice = await prisma.invoice.findUnique({
                                 where: { stripeInvoiceId: invoiceId}
                             });
+
+                            console.log(`[payment_failed] invoice.period_start=${new Date(invoice.period_start * 1000).toISOString()} period_end=${invoice.period_end ? new Date(invoice.period_end * 1000).toISOString() : 'null'} lines=${invoice.lines?.data?.length} firstLinePeriodEnd=${(invoice.lines?.data?.[0] as any)?.period?.end ? new Date((invoice.lines.data[0] as any).period.end * 1000).toISOString() : 'null'}`);
 
                             if(existingInvoice) { //check postoji li
                                 await prisma.invoice.update({
@@ -595,7 +595,52 @@ export async function POST(request: Request) {
 
                                 console.log(`Azuriran invoice ${existingInvoice.id} status na ${invoice.status}`);
                             } else {
-                                console.log(`Nema racuna za Stripe invoice ID: ${invoiceId}`);
+                                const user = await prisma.user.findUnique({
+                                    where: { stripeId: customerId }
+                                });
+                                if (user) {
+                                    const dbSubForFailed = await prisma.subscriptions.findFirst({
+                                        where: { userStripeId: customerId }
+                                    });
+                                    const subId = dbSubForFailed?.stripePaymentId ?? null;
+                                    const failedMaxLine = (invoice.lines?.data || []).reduce((best: any, line) =>
+                                        ((line as any).period?.end || 0) > ((best as any)?.period?.end || 0) ? line : best, null);
+                                    const failedPeriodStart = (failedMaxLine as any)?.period?.start
+                                        ? new Date((failedMaxLine as any).period.start * 1000)
+                                        : new Date(invoice.period_start * 1000);
+                                    const failedPeriodEnd = (failedMaxLine as any)?.period?.end
+                                        ? new Date((failedMaxLine as any).period.end * 1000)
+                                        : (invoice.period_end ? new Date(invoice.period_end * 1000) : null);
+                                    await prisma.invoice.create({
+                                        data: {
+                                            stripeInvoiceId: invoice.id,
+                                            userId: user.id,
+                                            subscriptionId: subId,
+                                            invoiceNumber: invoice.number,
+                                            status: invoice.status ?? 'open',
+                                            total: invoice.total,
+                                            currency: invoice.currency,
+                                            createdAt: new Date(invoice.created * 1000),
+                                            periodStart: failedPeriodStart,
+                                            periodEnd: failedPeriodEnd,
+                                            invoicePdfUrl: invoice.invoice_pdf,
+                                            paymentMethod: 'card',
+                                        },
+                                    });
+                                    console.log(`Račun kreiran iz payment_failed eventa: ${invoice.id} | periodEnd: ${failedPeriodEnd?.toISOString()}`);
+                                }
+                            }
+
+                            const graceSub = await prisma.subscriptions.findFirst({
+                                where: { userStripeId: customerId }
+                            });
+                            const subscriptionId = graceSub?.stripePaymentId ?? null;
+                            if (subscriptionId) {
+                                // Use invoice.created (Stripe server/test-clock time) instead of Date.now()
+                                // so cancel_at is always in the future relative to the test clock
+                                const cancelAt = invoice.created + 24 * 60 * 60;
+                                await stripe.subscriptions.update(subscriptionId, { cancel_at: cancelAt });
+                                console.log(`Grace period postavljen; pretplata ${subscriptionId} se otkazuje: ${new Date(cancelAt * 1000).toISOString()}`);
                             }
                         } catch (err) {
                             console.error('Error procesuirajuci invoice payment failed webhook', err);
