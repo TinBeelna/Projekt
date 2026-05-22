@@ -2,6 +2,7 @@ import { prisma } from "@/app/lib/prisma";
 //import { cookies } from "next/headers";
 import { auth } from "@/app/lib/auth";
 import { getSellers } from "@/app/lib/sellers"
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,6 +27,7 @@ export default async function PaymentsPage() {
 
   return (
     <div className="p-8">
+      <AutoRefresh />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Moja Plaćanja</h1>
         <p className="text-sm text-gray-500 mt-1">Povijest svih vaših transakcija za {mail}</p>

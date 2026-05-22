@@ -1,5 +1,6 @@
 import { prisma } from "@/app/lib/prisma";
 import CaptureButtons from "@/app/components/AdminDashboardButtons";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="p-8">
+      <AutoRefresh />
       <h1 className="text-2xl font-bold mb-1 text-gray-900">Autorizirana plaćanja (Na čekanju)</h1>
       <p className="text-sm text-gray-500 mb-8">Plaćanja koja čekaju potvrdu naplate.</p>
 

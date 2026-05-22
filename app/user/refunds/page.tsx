@@ -1,8 +1,9 @@
 import { prisma } from "@/app/lib/prisma";
 //import { cookies } from "next/headers";
-import PartialRefundButton from "@/app/components/PartialRefundButton"; 
+import PartialRefundButton from "@/app/components/PartialRefundButton";
 import FullRefundButton from "@/app/components/RefundButton";
 import { auth } from "@/app/lib/auth"
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 // sql changes instant; google preporuka
 export const dynamic = 'force-dynamic';
@@ -38,6 +39,7 @@ export default async function RefundsPage() {
 
   return (
     <div className="p-8">
+      <AutoRefresh />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Povrat sredstava (Refunds)</h1>
         <p className="text-sm text-gray-500 mt-1">Preostalo za povrat: {refundablePayments.length} stavki</p>

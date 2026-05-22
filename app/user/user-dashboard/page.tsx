@@ -2,6 +2,7 @@ import { auth } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 import TransferForm from "@/app/components/TransferForm";
 import { transferFundsSEPA, balanceInquiry } from "@/app/lib/transfer";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 export const dynamic = 'force-dynamic';
 
@@ -109,6 +110,7 @@ export default async function UserDashboardPage() {
 
   return (
     <div className="p-8 space-y-10">
+      <AutoRefresh />
 
       {/* STANJE RAČUNA */}
       <div className="bg-white border rounded-xl p-6">

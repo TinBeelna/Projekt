@@ -1,4 +1,5 @@
 import { listPayouts, getWalletBalance } from "@/app/lib/payout-balance";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 const formatCurrency = (amount: number, currency: string) => {
   return new Intl.NumberFormat("de-DE", {
@@ -18,6 +19,7 @@ export default async function BalancePage() {
 
   return (
   <div className="p-8">
+    <AutoRefresh />
     <div className="mb-8">
       <h1 className="text-2xl font-bold text-gray-900">Balance Check</h1>
       <p className="text-sm text-gray-500 mt-1">Overview of your multi-currency wallets and recent payouts.</p>

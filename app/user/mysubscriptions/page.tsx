@@ -2,6 +2,7 @@
 //import { cookies } from "next/headers";
 import { prisma } from "@/app/lib/prisma";
 import SubscriptionButtons from "@/app/components/SubButtons";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 import { auth } from "@/app/lib/auth"
 
 export const dynamic = 'force-dynamic';
@@ -31,7 +32,7 @@ export default async function MySubscriptionsPage() {
         }
 
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ periodEnd: 'desc' }, { createdAt: 'desc' }],
       include: { subscription: true} //za naziv plana
   });
 
@@ -46,6 +47,7 @@ export default async function MySubscriptionsPage() {
 
   return (
     <div className="p-8 max-w-3xl space-y-8">
+      <AutoRefresh />
       <section>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Moja Pretplata</h1>
         <p className="text-sm text-gray-500 mb-4">Upravljajte svojom pretplatom i pregledajte račune.</p>

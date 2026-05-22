@@ -2,6 +2,7 @@
 import { prisma } from "@/app/lib/prisma";
 import PaymentMethodsClient from "./paymentmethodsclient";
 import { auth } from "@/app/lib/auth"
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 export const dynamic = 'force-dynamic';
 
@@ -16,5 +17,10 @@ export default async function PaymentMethodsPage() {
     const userId = user?.stripeId || "no_id";
 
     //Id se salje korisniku (client compponent); radi problema sa dobivanjem userId bilo je potrebno odvojiti client i server strane
-    return <PaymentMethodsClient userId={userId} />;
+    return (
+        <>
+            <AutoRefresh />
+            <PaymentMethodsClient userId={userId} />
+        </>
+    );
 }

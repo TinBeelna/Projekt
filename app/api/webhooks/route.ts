@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { stripe } from "@/app/lib/stripe";
 import Stripe from "stripe";
 import { prisma } from "app/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: Request) {
     let event
@@ -100,6 +101,9 @@ export async function POST(request: Request) {
                                 } 
                             });
                             console.log("USPJESAN DB APDEJT ZA SUCCESS PLACANJA");
+                            revalidatePath("/user/payments");
+                            revalidatePath("/admin/admin-dashboard");
+                            revalidatePath("/user/user-dashboard");;
 
                             // if(isPartial) {
                             //     //napraviti novi paymentintent i stripe paymentintent
@@ -156,6 +160,8 @@ export async function POST(request: Request) {
                             status: "Failed",
                             } 
                         });
+                        revalidatePath("/user/payments");
+                        revalidatePath("/admin/admin-dashboard");
                         }
                     } catch (err) {
                         console.error('Error prilikom azuriranja statusa placanja:', err);
@@ -187,6 +193,8 @@ export async function POST(request: Request) {
                         });
                         }
 
+                    revalidatePath("/user/payments");
+                    revalidatePath("/admin/admin-dashboard");
                     } catch (err){
                         console.error('Error tijekom payment_intent.amount_capturable_updated webhooka: ',err);
                     }
@@ -229,10 +237,14 @@ export async function POST(request: Request) {
                                 }
                             });
                         }
+                    revalidatePath("/user/refunds");
+                    revalidatePath("/admin/refunds");
+                    revalidatePath("/admin/application-fee-earnings");
+                    revalidatePath("/admin/admin-dashboard");
                     } catch (err) {
                         console.error('Error u charge.refunded webhooku: ', err);
                     }
-                    break;}  
+                    break;}
                 
                     case 'customer.subscription.created': { 
                         try {
@@ -308,6 +320,8 @@ export async function POST(request: Request) {
                                     }
                                     });
                                     console.log('NAPRAVIO SUBSCRIPTION!!');
+                                    revalidatePath("/user/mysubscriptions");
+                                    revalidatePath("/admin/subscriptions");
 
                                     //update racuna sa subid (ako se ne dobije iz webhooka izrade invoicea)
                                     if (subscription.latest_invoice) {
@@ -399,7 +413,9 @@ export async function POST(request: Request) {
                                     }
                                 });
                                 console.log(`Subscription ${subscriptionId} status -> ${subscription.status}`);
-                            } 
+                                revalidatePath("/user/mysubscriptions");
+                                revalidatePath("/admin/subscriptions");
+                            }
                         }
                     } catch (err) {
                         console.error('Error u sub updated webhooku: ', err);
@@ -416,7 +432,9 @@ export async function POST(request: Request) {
                                 where: {
                                     stripePaymentId: subId,
                                 }
-                            })
+                            });
+                            revalidatePath("/user/mysubscriptions");
+                            revalidatePath("/admin/subscriptions");
                         } catch (err) {
                             console.error('Error tijekom customer subscription deleted webhooka.', err);
                         }
@@ -489,6 +507,7 @@ export async function POST(request: Request) {
                                     },
                                 });
                                 console.log(`✅ Invoice upisan: ${invoice.id}`);
+                                revalidatePath("/user/mysubscriptions");
                             }
                         } catch (err) {
                             console.error('Error tijekom invoice.created webhooka: ', err);
@@ -559,6 +578,8 @@ export async function POST(request: Request) {
                                     },
                                 });
                                 console.log(`✅ Invoice upsert iz paid eventa: ${invoice.id}`);
+                                revalidatePath("/user/mysubscriptions");
+                                revalidatePath("/admin/subscriptions");
 
                                 if (stripeSub && (stripeSub as any).cancel_at) {
                                     await stripe.subscriptions.update(subId!, { cancel_at: '' });
@@ -642,10 +663,12 @@ export async function POST(request: Request) {
                                 await stripe.subscriptions.update(subscriptionId, { cancel_at: cancelAt });
                                 console.log(`Grace period postavljen; pretplata ${subscriptionId} se otkazuje: ${new Date(cancelAt * 1000).toISOString()}`);
                             }
+                            revalidatePath("/user/mysubscriptions");
+                            revalidatePath("/admin/subscriptions");
                         } catch (err) {
                             console.error('Error procesuirajuci invoice payment failed webhook', err);
                         }
-                        
+
                     break;}
 
                     case 'customer.updated': { //sluzi za azuriranje default payment method kupca
@@ -706,6 +729,8 @@ export async function POST(request: Request) {
                                 },
                             });
 
+                            revalidatePath("/user/refunds");
+                            revalidatePath("/admin/disputes");
                         } catch (err) {
                             console.error('Error tijekom postavljanja novog disputea u db!', err);
                         }
@@ -723,6 +748,8 @@ export async function POST(request: Request) {
                                 },
                         })
                         console.log(`Dispute ${dispute.id} azuriran; Status: ${dispute.status}`);
+                            revalidatePath("/user/refunds");
+                            revalidatePath("/admin/disputes");
                         } catch (err) {
                             console.error('Error tijekom azuriranja db disputea:',err);
                         }
@@ -741,9 +768,11 @@ export async function POST(request: Request) {
                                     status: dispute.status,
                                 }
                             });
+                            revalidatePath("/user/refunds");
+                            revalidatePath("/admin/disputes");
                         } catch(err) {
                             console.log('Error tijekom azuriranja statusa zatvorenog disputea:', err);
-                        }   
+                        }
                     break;}
 
                     case 'radar.early_fraud_warning.created': {
@@ -784,6 +813,7 @@ export async function POST(request: Request) {
                                 },
                             });
                             console.log(`ApplicationFee upisan: ${fee.id} od sellera: ${sellerId}`);
+                            revalidatePath("/admin/application-fee-earnings");
                         } catch (err) {
                             console.error('Error tijekom application_fee.created webhooka:', err);
                         }
@@ -797,6 +827,7 @@ export async function POST(request: Request) {
                                 data: { amountRefunded: fee.amount_refunded },
                             });
                             console.log(`ApplicationFee ${fee.id} refund webhook; vraceno: ${fee.amount_refunded}`);
+                            revalidatePath("/admin/application-fee-earnings");
                         } catch (err) {
                             console.error('Error tijekom application_fee.refunded webhooka:', err);
                         }

@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma"
 import { getSellers } from "@/app/lib/sellers"
 import { getAccFeeEarningsInCurr } from "@/app/lib/fee"
+import { AutoRefresh } from "@/app/components/AutoRefresh"
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +22,7 @@ export default async function ApplicationFeeEarningsPage() {
 
     return (
         <div className="p-8">
-
+            <AutoRefresh />
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">Earnings from 3PS</h1>
                 <p className="text-sm text-gray-500 mt-1">Overview of your multi-currency application fee earnings</p>

@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import {cancelSubscription} from "@/app/lib/subscriptions";
 import { redirect } from "next/navigation";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +18,7 @@ export default async function SubscriptionsPage() {
 
   return (
     <div className="p-8">
+      <AutoRefresh />
       <h1 className="text-2xl font-bold mb-1 text-gray-900">Pregled svih pretplata</h1>
       <p className="text-sm text-gray-500 mb-8">Sve aktivne pretplate i ukupno plaćeni iznosi po korisniku.</p>
 

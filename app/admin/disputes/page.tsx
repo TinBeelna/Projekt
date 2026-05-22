@@ -23,7 +23,11 @@ export default function DisputeSection({ stripeId }: { stripeId: string }) {
     }
   };
 
-  useEffect(() => { fetchDisputes(); }, [stripeId]);
+  useEffect(() => {
+    fetchDisputes();
+    const id = setInterval(fetchDisputes, 3000);
+    return () => clearInterval(id);
+  }, [stripeId]);
 
   if (loading) return <p className="text-sm text-gray-500">Loading...</p>;
   if (disputes.length === 0) return null;

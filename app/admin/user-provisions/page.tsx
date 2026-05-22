@@ -1,4 +1,5 @@
 import { prisma } from "@/app/lib/prisma";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,7 @@ export default async function UserProvisionsPage() {
 
   return (
     <div className="p-8 space-y-10">
+      <AutoRefresh />
 
       {/* TOTAL EARNED */}
       <div className="bg-white border rounded-xl p-6">

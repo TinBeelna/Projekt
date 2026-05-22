@@ -1,6 +1,7 @@
 import { prisma } from "@/app/lib/prisma";
 import AdminExecuteRefund from "@/app/components/ConfirmRefundButton";
 import CancelRefundButton from "@/app/components/CancelRefundButton";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 // Forces the admin to always see fresh data from the DB
 export const dynamic = 'force-dynamic';
@@ -31,6 +32,7 @@ export default async function AdminRefundsPage() {
 
   return (
     <div className="p-8 space-y-10">
+      <AutoRefresh />
       {/* AKTIVNI ZAHTJEVI */}
       <div>
         <div className="flex justify-between items-end mb-6">

@@ -1,4 +1,5 @@
 import { prisma } from "@/app/lib/prisma";
+import { AutoRefresh } from "@/app/components/AutoRefresh";
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,7 @@ const logs = await prisma.webhook.findMany({
 
   return (
     <div className="p-8">
+      <AutoRefresh />
       <h1 className="text-2xl font-bold mb-1 text-gray-900">Stripe Webhook Logovi</h1>
       <p className="text-sm text-gray-500 mb-8">Prikaz svih primljenih Stripe webhook evenata.</p>
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
