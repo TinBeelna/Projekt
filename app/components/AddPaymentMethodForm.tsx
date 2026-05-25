@@ -78,7 +78,7 @@ function CardForm({ userId, onSuccess, onError}: CardFormProps) {
                cardElement.clear();
                setCardholderName('');
                setClientSecret(''); //reset client secreta na kraju bloka
-               setTimeout(onSuccess, 100);
+               setTimeout(onSuccess, 100); //za card issue
                throw new Error(saveResult.error || 'Nepoznati error tijekom spremanja metode placanja!');
 
             }
@@ -86,7 +86,7 @@ function CardForm({ userId, onSuccess, onError}: CardFormProps) {
             cardElement.clear();
             setCardholderName('');
             setClientSecret(''); //reset client secreta na kraju bloka
-            setTimeout(onSuccess, 100);
+            setTimeout(onSuccess, 100); // za card issue
 
         } catch (err) {
             onError(err instanceof Error ? err.message : 'Nepoznati error prilikom sejvanja kartice!!');

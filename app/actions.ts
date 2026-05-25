@@ -69,6 +69,10 @@ export async function registerUser(formData: FormData) {
     const firstName = formData.get('firstName') as string;
     const lastName = formData.get('lastName') as string;
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return { error: 'Please enter a valid email address' };
+    }
+
     if (password.length < 5) {
         return { error: 'Password must be at least 5 characters' };
     }
