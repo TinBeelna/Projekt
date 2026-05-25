@@ -108,10 +108,10 @@ export async function RefundAction(stripeId: string, amount: number, currency: s
                 }
             });
 
-            // cisti se request da vise nije na listi
-            await prisma.refunds.deleteMany({
-                where: { stripePaymentId: stripeId }
-            });
+            // // cisti se request da vise nije na listi
+            // await prisma.refunds.deleteMany({
+            //     where: { stripePaymentId: stripeId }
+            // });
 
             revalidatePath("/user/refunds");
             revalidatePath("/admin/refunds");

@@ -209,7 +209,7 @@ export async function POST(request: Request) {
                         await prisma.paymentIntents.update({
                                 where: { id: orderId},
                                 data: {
-                                    ...(isFullyRefunded ? { status: "Charge_refunded", amount: refund.amount } : {}),
+                                    ...(isFullyRefunded ? { status: "REFUNDED", amount: refund.amount } : {}),
                                     currency: refund.currency,
                                 }
                             });

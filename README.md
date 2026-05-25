@@ -2,6 +2,10 @@
 
 Projekt implementira razne funkcionalnosti tipičnih internet marketplace stranica poput pretplata, kupovine, autorizacije kupnji, disputeova, refunda...
 
+## Test cases
+
+> Za detaljniji pregled test caseva (slike, videozapisi), provjeriti .zip na linku:
+
 ---
 
 ## Prerequisites
@@ -146,10 +150,6 @@ Otvoriti četiri terminala i pokrenuti redom:
 | `USER` | Plaćanja, pretplate, zahtjevi za povrat, bankovni transferi |
 | `ADMIN` | Puni dashboard — svi korisnici, pretplate, webhookovi, disputevi, naknade |
 | `REFUNDADMIN` | Upravljanje zahtjevima za povrat novca |
-
-## Testni scenariji
-
-> Za detaljniji pregled test caseva, provjeriti .zip na stranici:
 
 ### Testni podaci (Stripe test kartice)
 

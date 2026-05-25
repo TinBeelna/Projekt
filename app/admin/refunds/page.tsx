@@ -24,6 +24,14 @@ export default async function AdminRefundsPage() {
     },
   });
 
+  // Mapiranje stripePaymentId → paymentIntents.id za konzistennto pokazivanje IDeva
+  const stripeIds = completedRefunds.map(r => r.stripePaymentId).filter(Boolean) as string[];
+  const paymentIntentsForRefunds = await prisma.paymentIntents.findMany({
+    where: { stripeId: { in: stripeIds } },
+    select: { id: true, stripeId: true },
+  });
+  const stripeToPaymentIntentId = new Map(paymentIntentsForRefunds.map(p => [p.stripeId, p.id]));
+
   // 3. Fetch declined refund requests
   const declinedRefunds = await prisma.paymentIntents.findMany({
     where: { status: "DECLINED" },
@@ -117,7 +125,7 @@ export default async function AdminRefundsPage() {
       {(() => {
         const history = [
           ...completedRefunds.map(r => ({
-            key: `r-${r.id}`, id: r.id, firstName: r.firstName, lastName: r.lastName,
+            key: `r-${r.id}`, id: stripeToPaymentIntentId.get(r.stripePaymentId) ?? r.id, firstName: r.firstName, lastName: r.lastName,
             email: r.email, stripeId: r.stripePaymentId, createdAt: r.createdAt,
             declined: false, amount: r.amount, currency: r.currency,
           })),
@@ -134,11 +142,11 @@ export default async function AdminRefundsPage() {
             {history.length === 0 ? (
               <p className="text-gray-400 bg-gray-50 p-6 rounded-lg text-center">Nema evidentiranih izvršenih povrata.</p>
             ) : (
-              <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-white border rounded-xl overflow-x-auto shadow-sm">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID (payment intenta)</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Kupac</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Email</th>
                       <th className="px-6 py-3 text-left text-xs font-semibold text-green-600 uppercase">Vraćeno</th>
@@ -156,7 +164,7 @@ export default async function AdminRefundsPage() {
                           {row.declined ? "Otkazano" : `${(row.amount / 100).toFixed(2)} ${row.currency}`}
                         </td>
                         <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">{row.stripeId}</td>
-                        <td className="px-6 py-4 text-[10px] font-mono text-gray-400 truncate max-w-[120px]">
+                        <td className="px-6 py-4 text-[10px] font-mono text-gray-400 whitespace-nowrap">
                           {row.createdAt ? new Date(row.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
                         </td>
                       </tr>
