@@ -53,7 +53,7 @@ TRUSTED_BANK_2_BIC=MOCKHRYYXXX
 BANK2_URL=http://localhost:3000/api/bank_2
 ```
 
-- `STRIPE_SECRET_KEY` i `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — iz vašeg[Stripe dashboard](https://dashboard.stripe.com/test/apikeys)
+- `STRIPE_SECRET_KEY` i `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — iz vašeg [Stripe dashboard](https://dashboard.stripe.com/test/apikeys)
 - `STRIPE_WEBHOOK_SECRET` — generira se nakon `stripe listen` komande (korak 6 ispod)
 - `AUTH_SECRET` — generirati sa `openssl rand -base64 32`
 - `NEXT_PUBLIC_APP_URL` — vaš ngrok javni URL (korak 5 ispod); potreban za google/apple pay testiranje
@@ -95,9 +95,9 @@ U bazi podataka lozinke su enkriptirane; za login se koriste podatci iznad.
 
 ---
 
-## 5. Pokretanje ngroка
+## 5. Pokretanje ngroka
 
-ngrok je potreban jer goole i apple pay zahtijevaju javno dostupnu HTTPS adresu — `localhost` nije dovoljan.
+ngrok je potreban jer google i apple pay zahtijevaju javno dostupnu HTTPS adresu — `localhost` nije dovoljan.
 
 ```bash
 ngrok http 3000
@@ -176,14 +176,12 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 1. Kliknuti register
 2. Upisati email (koristiti znak @)
 3. Upisati ime i prezime (nema ograničenja)
-4. Upisati lozinku (6 ili )
+4. Upisati lozinku (dovoljno dugačku, 5+ znakova)
 
 **Očekivani rezultat:**
 - Novi korisnik je zapisan u bazu (provjeriti npm prisma studio)
 - Novi korisnik se automatski logira
 - Novi customer napravljen na stripe dashboardu
-
----
 
 ---
 
@@ -207,8 +205,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 ---
 
----
-
 ### TS-02: 3DS/SCA plaćanje
 
 **Preduvjeti:**
@@ -222,9 +218,7 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 **Očekivani rezultat:**
 - Prolazi plaćanje kao u TS-01 (manual i automatski auth)
 - Balans admina će se promijeniti u narednom roku (zarada)
--Plaćanje (paymentIntents) upisano u bazu
-
----
+- Plaćanje (paymentIntents) upisano u bazu
 
 ---
 
@@ -254,8 +248,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 ---
 
----
-
 ### TS-04: Pretplate + računi
 
 **Preduvjeti:**
@@ -266,8 +258,8 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 2. Odabrati svoj plan "Tjedno" 
 3. Ispuniti podatke sa karticom na stripe checkout stranici
 4. Vratiti se na "My subscriptions" stranicu
-5. Nadograditi pretplatu ":Nadogradi" na "Mjesečno"
-6. Nakon provjere računa, otići na ":smanji"
+5. Nadograditi pretplatu "Nadogradi" na "Mjesečno"
+6. Nakon provjere računa, otići na "Smanji"
 7. Provjeriti negativnu vrijednost računa; označava vraćen novac 
 8. (Opcionalno) logirati se kao admin te kliknuti "Cancel" za otkazivanje preplate
 
@@ -277,8 +269,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 - Na admin "subscriptions" stranici se vidi pretplata te zaradu od nje za svakog korisnika sa aktivnom pretplatom
 - Pretplata upisana u bazu te na stripe dashboard
 - (Opcionalno) korisnik više ne vidi pretplatu nakon što ju je zaustavio admin
-
----
 
 ---
 
@@ -300,8 +290,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 ---
 
----
-
 ### TS-06: Webhooks
 
 **Preduvjeti:**
@@ -316,8 +304,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 - Admin može pratiti svu komunikaciju sa stripeom iz pristiglih webhookova
 - Webhookovi iz prijašnjih koraka su upisati na ovoj stranici
 - U terminalu gdje se vrti "npm run dev" se vide primljeni webhookovi
-
----
 
 ---
 
@@ -342,8 +328,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 ---
 
----
-
 ### TS-08: Payouts i Balance
 
 **Preduvjeti:**
@@ -362,8 +346,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 ---
 
----
-
 ### TS-09: Multi-currency/FX
 
 **Preduvjeti:**
@@ -374,8 +356,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 **Očekivani rezultat:**
 - Prikaz valute je drugačiji u bazi, na stripe dashboardu te na admin/user stranicama
-
----
 
 ---
 
@@ -399,8 +379,6 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 ---
 
----
-
 ### TS-11: Bonus task 2: Marketplace
 #### NAPOMENA: manual capture se traži za knjige ali ne i za novine (kao kod buy&pay)
 **Preduvjeti:**
@@ -419,7 +397,7 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 ---
 
-### TS-11: Bonus task 3: SEPA transfer
+### TS-12: Bonus task 3: SEPA transfer
 
 **Preduvjeti:**
 - Izrađen je još jedan korisnik (Korisnik 2)
