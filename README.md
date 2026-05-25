@@ -4,8 +4,8 @@ Projekt implementira razne funkcionalnosti tipičnih internet marketplace strani
 
 ## Test cases
 
-> Za detaljniji pregled test caseva (slike, videozapisi, neka pojašnjenja), provjeriti .zip na linku:
-> https://drive.google.com/file/d/16auEIsi_lpOAU4Yr7PtNSuD0-OSFvB7j/view?usp=sharing
+> Za detaljniji pregled test caseva (slike, videozapisi, neka pojašnjenja), provjeriti [.zip na linku](https://drive.google.com/file/d/16auEIsi_lpOAU4Yr7PtNSuD0-OSFvB7j/view?usp=sharing)
+
 
 ---
 
