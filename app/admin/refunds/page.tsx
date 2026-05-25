@@ -7,7 +7,7 @@ import { AutoRefresh } from "@/app/components/AutoRefresh";
 export const dynamic = 'force-dynamic';
 
 export default async function AdminRefundsPage() {
-  // 1. Fetch active refund requests
+  // aktivni refund requestovi
   const refundRequests = await prisma.paymentIntents.findMany({
     where: {
       status: "REQUESTED_REFUND",
@@ -17,7 +17,7 @@ export default async function AdminRefundsPage() {
     },
   });
 
-  // 2. Fetch history of all successful refunds
+  // svi uspjesni refund intentovi
   const completedRefunds = await prisma.refunds.findMany({
     orderBy: {
       id: 'desc',
@@ -32,7 +32,7 @@ export default async function AdminRefundsPage() {
   });
   const stripeToPaymentIntentId = new Map(paymentIntentsForRefunds.map(p => [p.stripeId, p.id]));
 
-  // 3. Fetch declined refund requests
+  // odbijeni refundi
   const declinedRefunds = await prisma.paymentIntents.findMany({
     where: { status: "DECLINED" },
     orderBy: { id: 'desc' },
