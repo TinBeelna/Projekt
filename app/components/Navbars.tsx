@@ -58,13 +58,14 @@ export function UserNavbar() {
         <p className="text-xs text-slate-400 mt-0.5">User Portal</p>
       </div>
       <nav className="flex flex-col gap-1 flex-1 p-3">
-        <NavLink href="/user/user-dashboard">🏠 Dashboard</NavLink>
+        <NavLink href="/user/user-dashboard">🏠 My dashboard</NavLink>
         <NavLink href="/user/buypay">🛒 Buy & Pay</NavLink>
         <NavLink href="/user/marketplace-products"> 👠 Marketplace (3PS)</NavLink>
-        <NavLink href="/user/payments">💳 Payments</NavLink>
-        <NavLink href="/user/refunds">🔄 Refunds</NavLink>
+        <NavLink href="/user/payments">💳 My payments</NavLink>
+        <NavLink href="/user/refunds">🔄 My refunds</NavLink>
         <NavLink href="/user/mysubscriptions">📋 My Subscriptions</NavLink>
-        <NavLink href="/user/paymentmethods">💵 Payment Methods</NavLink>
+        <NavLink href="/user/paymentmethods">💵 My Payment Methods</NavLink>
+        <NavLink href="/user/disputes">🗣️ My disputes</NavLink>
       </nav>
       <LogoutButton />
     </aside>

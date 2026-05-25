@@ -200,7 +200,7 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 3. Otići na "Payments" stranicu. Provjeriti status tranzakcije
 
 **Očekivani rezultat:**
-- Plaćanje logirano na "Payments" korisničkoj stranici 
+- Plaćanje logirano na "Payments" korisničkoj stranici te na "dashboard" admin stranici
 - Balans admina će se promijeniti (zarada)
 - Plaćanje (paymentIntents) upisano u bazu
 
@@ -246,6 +246,7 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 **Očekivani rezultat:**
 - Korisnik vidi "osporeno - povrat blokiran" za odbijeni refund
 - Korisnik vidi mogućnost vršenja povrata za ostatak nevraćenog novca od tranzakcie čiji je partial refund potvrđen
+- Korisnik vidi "potpuno vraceno" u slučaju da je napravljen refund za 100% iznosa
 - U slučaju da je izvršen puni povrat, korisnik više ne vidi tranzakciju za vraćanje novca
 - Refund (refunds) upisan u bazu
 
@@ -326,7 +327,7 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 - Radi jednostavnosti: ponoviti korak TS-05 sa karticom 4000 0000 0000 0259 (postaviti kao default po potrebi)
 
 **Koraci:**
-1. Kupiti nešto na "Buy&Pay" stranici; primjerice novine radi brzine izvođenja
+1. Kupiti nešto na "Buy&Pay" stranici; primjerice novine radi brzine izvođenja. Pogledati "My disputes" stranicu.
 2. Odlogirati se. Logirati se kao admin.
 3. Otići na "Refunds" stranicu. 
 4. Vidi se dispute:
@@ -335,7 +336,7 @@ Datum isteka: bilo koji budući datum (ne u pre dalekoj budućnosti; pisati broj
 
 **Očekivani rezultat:**
 - Dispute se ažurira, admin vidi status: under review ili status: finalized (Won/Lost)
-- Dispute zapisan u bazu
+- Dispute zapisan u bazu, na admin "disputes" te korisnikovu "My disputes" stranicu
 - Ažurira se balans admina (plaćen je dispute)
 
 ---
